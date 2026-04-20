@@ -528,17 +528,15 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   
   <div class="scroll" style="padding:16px 20px">
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-              <h2 id="d-name" style="margin:0">Neobrufen</h2>
-              <button id="bm-detail" onclick="toggleDetailBm()" class="bm" style="position:relative;top:auto;right:auto;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              </button>
-            </div>
-            <p id="d-mfr" style="font-size:13px">Zambon Group</p>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <h2 id="d-name" style="margin:0">Neobrufen</h2>
+            <button id="bm-detail" onclick="toggleDetailBm()" style="width:30px;height:30px;background:var(--surface-card);border:1px solid var(--border-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
           </div>
+          <p id="d-mfr" style="font-size:13px">Zambon Group</p>
         </div>
         <div id="d-badge" style="padding:8px 14px;border-radius:16px;background:var(--color-teal-tint);white-space:nowrap;flex-shrink:0">
           <p id="d-match" style="font-size:14px;font-weight:700;color:var(--on-teal-tint)">100% Match</p>
@@ -1536,9 +1534,8 @@ function updateDetailBm(isSaved){
   if(!btn) return;
   const svg=btn.querySelector('svg');
   const paths=btn.querySelectorAll('path');
-  btn.classList.toggle('on', isSaved);
-  btn.style.borderColor=isSaved?'#4F6EF7':'';
-  btn.style.background=isSaved?'rgba(79,110,247,0.06)':'var(--surface-card)';
+  btn.style.borderColor=isSaved?'#4F6EF7':'var(--border-card)';
+  btn.style.background=isSaved?'rgba(79,110,247,0.08)':'var(--surface-card)';
   if(svg){
     svg.setAttribute('stroke', isSaved?'#4F6EF7':'var(--text-disabled)');
     svg.setAttribute('stroke-width', isSaved?'2.5':'2');
