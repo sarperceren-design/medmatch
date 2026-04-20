@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MedMatch</title>
+<!-- PWA: full screen when launched from iPhone home screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MedMatch">
+<meta name="theme-color" content="#ffffff">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -245,6 +251,15 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 /* Allergy chips */
 .allergy-chip{background:var(--color-purple-tint);color:var(--on-purple-tint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid var(--color-purple-light);display:flex;align-items:center;gap:6px}
 
+/* On a real mobile device — hide the prototype frame and fill the screen */
+@media (max-width: 500px) {
+  body { background: var(--surface-page); align-items: flex-start; }
+  .device { width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; background: transparent; }
+  .screen { border-radius: 0; height: 100dvh; }
+  /* Hide the fake status bar — real iOS shows its own */
+  .device > .screen > div:first-child { display: none !important; }
+}
+
 /* Profile card */
 .cp{padding:18px}
 </style>
@@ -378,33 +393,8 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         </div>
         <span id="s-ai-query" style="font-size:12px;color:var(--text-disabled)"></span>
       </div>
-      <!-- Preview cards -->
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
-        <div class="rcard" onclick="navHistory=['search'];goTo('results',true)" style="padding:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <h3 style="font-size:15px">Neobrufen 400mg</h3>
-            <div style="display:flex;align-items:center;gap:6px"><span class="dot dot-g"></span><span style="font-size:12px;color:var(--on-teal-tint);font-weight:600">Safe</span><span class="m100" style="font-size:11px">100%</span></div>
-          </div>
-          <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">Zambon Group · Ibuprofen 400mg</p>
-          <div class="ns" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">✓ Exact active ingredient match</p></div>
-        </div>
-        <div class="rcard" onclick="navHistory=['search'];goTo('results',true)" style="padding:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <h3 style="font-size:15px">Espidifen 400mg</h3>
-            <div style="display:flex;align-items:center;gap:6px"><span class="dot dot-g"></span><span style="font-size:12px;color:var(--on-teal-tint);font-weight:600">Safe</span><span class="m100" style="font-size:11px">100%</span></div>
-          </div>
-          <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">Zambon Group · Ibuprofen 400mg</p>
-          <div class="ns" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">✓ Same ingredient, faster absorption</p></div>
-        </div>
-        <div class="rcard" onclick="navHistory=['search'];goTo('results',true)" style="padding:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <h3 style="font-size:15px">Ibuprofeno 600mg</h3>
-            <div style="display:flex;align-items:center;gap:6px"><span class="dot dot-a"></span><span style="font-size:12px;color:var(--on-orange-tint);font-weight:600">Caution</span><span class="m75" style="font-size:11px">75%</span></div>
-          </div>
-          <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">Various · Ibuprofen 600mg</p>
-          <div class="na" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">⚠ Higher dose — confirm with pharmacist</p></div>
-        </div>
-      </div>
+      <!-- Preview cards — populated dynamically by selectMedLive() -->
+      <div id="s-preview-cards" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
       <!-- See all results button -->
       <button class="btn" onclick="navHistory=['search'];goTo('results',true)" style="display:flex;align-items:center;justify-content:center;gap:8px">
         See all results
@@ -539,9 +529,16 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <div class="scroll" style="padding:16px 20px">
     <div style="display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <h2 id="d-name" style="margin-bottom:4px">Neobrufen</h2>
-          <p id="d-mfr" style="font-size:13px">Zambon Group</p>
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+              <h2 id="d-name" style="margin:0">Neobrufen</h2>
+              <button id="bm-detail" onclick="toggleDetailBm()" class="bm" style="position:relative;top:auto;right:auto;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </button>
+            </div>
+            <p id="d-mfr" style="font-size:13px">Zambon Group</p>
+          </div>
         </div>
         <div id="d-badge" style="padding:8px 14px;border-radius:16px;background:var(--color-teal-tint);white-space:nowrap;flex-shrink:0">
           <p id="d-match" style="font-size:14px;font-weight:700;color:var(--on-teal-tint)">100% Match</p>
@@ -634,34 +631,28 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <div id="ph-map-bg" style="position:absolute;inset:0;z-index:0;pointer-events:none"><div id="leaflet-map" style="width:100%;height:100%;pointer-events:all"></div></div>
   
 
-  <!-- Floating map controls (right side) — anchored above the sheet -->
-  <div id="ph-map-controls" style="position:absolute;right:12px;bottom:420px;z-index:11;display:flex;flex-direction:column;gap:8px">
+  <!-- Floating map controls — top right, clearly in map area -->
+  <div id="ph-map-controls" style="position:absolute;right:12px;top:64px;z-index:11;display:flex;flex-direction:column;gap:8px">
     <button onclick="if(window.leafletMap)window.leafletMap.zoomIn()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">+</button>
     <button onclick="if(window.leafletMap)window.leafletMap.zoomOut()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">−</button>
     <button onclick="if(window.leafletMap)window.leafletMap.locate({setView:true,maxZoom:16})" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
     </button>
   </div>
-  <!-- Grid toggle — left side so it doesn't stack with the right controls -->
-  <div style="position:absolute;left:12px;bottom:420px;z-index:11">
-    <button onclick="switchPharmSheet()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    </button>
-  </div>
 
   <!-- Bottom sheet -->
-  <div id="ph-sheet" style="position:absolute;bottom:0;left:0;right:0;z-index:10;background:var(--surface-card);border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.15)">
-    <!-- Handle -->
-    <div style="display:flex;justify-content:center;padding:10px 0 0">
+  <div id="ph-sheet" style="position:absolute;bottom:0;left:0;right:0;z-index:10;background:var(--surface-card);border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.15);display:flex;flex-direction:column;height:400px;overflow:hidden">
+    <!-- Handle — drag up/down to expand/collapse -->
+    <div id="ph-sheet-handle" style="display:flex;justify-content:center;padding:10px 0 6px;cursor:grab;touch-action:none">
       <div style="width:36px;height:4px;background:var(--divider);border-radius:2px"></div>
     </div>
 
-    <!-- Search bar -->
+    <!-- Search bar — searches by pharmacy name OR city/location -->
     <div style="padding:10px 16px 0">
       <div style="display:flex;align-items:center;background:var(--surface-input);border-radius:14px;padding:10px 14px;gap:10px">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <span style="flex:1;font-size:14px;color:var(--text-secondary)">Search pharmacies</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <input id="ph-search-input" type="text" placeholder="Search city, area or pharmacy..." oninput="handlePharmSearch(this.value)" style="flex:1;font-size:14px;color:var(--text-primary);background:transparent;border:none;outline:none;font-family:inherit;padding:0;border-radius:0;width:auto;min-width:0">
+        <svg onclick="document.getElementById('ph-search-input').value='';handlePharmSearch('')" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer;flex-shrink:0"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </div>
     </div>
 
@@ -674,7 +665,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     </div>
 
     <!-- Pharmacy list — rendered dynamically by renderPharmacyCards() -->
-    <div style="overflow-y:auto;max-height:320px;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px" id="ph-card-list">
+    <div style="overflow-y:auto;flex:1;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px" id="ph-card-list">
     </div>
   </div>
 </div>
@@ -1508,21 +1499,152 @@ function goToDetail(id){
 
 function toggleBm(id){
   const btn=document.getElementById('bm-'+id);
+  if(!btn) return;
   const svg=btn.querySelector('svg');
   const paths=btn.querySelectorAll('path');
-  if(saved.has(id)){
-    saved.delete(id);btn.classList.remove('on');
+  // Use brand_name as stable save key if liveResults available, else use index
+  const med=liveResults[id];
+  const saveKey=med?med.brand_name:String(id);
+
+  if(saved.has(saveKey)){
+    saved.delete(saveKey);
+    btn.classList.remove('on');
     btn.style.borderColor='';btn.style.background='';
-    svg.setAttribute('stroke','var(--text-disabled)');
-    svg.setAttribute('stroke-width','2');
-    paths.forEach(p=>{p.setAttribute('fill','none');p.setAttribute('stroke','var(--text-disabled)')});
+    if(svg){svg.setAttribute('stroke','var(--text-disabled)');svg.setAttribute('stroke-width','2');}
+    paths.forEach(p=>{p.setAttribute('fill','none');p.setAttribute('stroke','var(--text-disabled)');});
   } else {
-    saved.add(id);btn.classList.add('on');
+    saved.add(saveKey);
+    if(med) savedMeds.set(saveKey, med);
+    btn.classList.add('on');
     btn.style.borderColor='#4F6EF7';btn.style.background='rgba(79,110,247,0.06)';
-    svg.setAttribute('stroke','#4F6EF7');
-    svg.setAttribute('stroke-width','2.5');
-    paths.forEach(p=>{p.setAttribute('fill','rgba(79,110,247,0.15)');p.setAttribute('stroke','#4F6EF7')});
+    if(svg){svg.setAttribute('stroke','#4F6EF7');svg.setAttribute('stroke-width','2.5');}
+    paths.forEach(p=>{p.setAttribute('fill','rgba(79,110,247,0.15)');p.setAttribute('stroke','#4F6EF7');});
   }
+  // Sync the detail page bookmark button if it's showing the same med
+  const detailBm=document.getElementById('bm-detail');
+  if(detailBm && currentDetailMed && currentDetailMed.brand_name===saveKey){
+    updateDetailBm(saved.has(saveKey));
+  }
+}
+
+// Stable store for saved medication objects
+const savedMeds=new Map();
+let currentDetailMed=null;
+
+function updateDetailBm(isSaved){
+  const btn=document.getElementById('bm-detail');
+  if(!btn) return;
+  const svg=btn.querySelector('svg');
+  const paths=btn.querySelectorAll('path');
+  btn.classList.toggle('on', isSaved);
+  btn.style.borderColor=isSaved?'#4F6EF7':'';
+  btn.style.background=isSaved?'rgba(79,110,247,0.06)':'var(--surface-card)';
+  if(svg){
+    svg.setAttribute('stroke', isSaved?'#4F6EF7':'var(--text-disabled)');
+    svg.setAttribute('stroke-width', isSaved?'2.5':'2');
+  }
+  paths.forEach(p=>{
+    p.setAttribute('fill', isSaved?'rgba(79,110,247,0.15)':'none');
+    p.setAttribute('stroke', isSaved?'#4F6EF7':'var(--text-disabled)');
+  });
+}
+
+function toggleDetailBm(){
+  if(!currentDetailMed) return;
+  const key=currentDetailMed.brand_name;
+  if(saved.has(key)){
+    saved.delete(key);
+    savedMeds.delete(key);
+    updateDetailBm(false);
+  } else {
+    saved.add(key);
+    savedMeds.set(key, currentDetailMed);
+    updateDetailBm(true);
+  }
+  // Sync back to results list bookmark button
+  liveResults.forEach((m,i)=>{
+    if(m.brand_name===key){
+      const btn=document.getElementById('bm-'+i);
+      if(btn){
+        const isSaved=saved.has(key);
+        const svg=btn.querySelector('svg');
+        const paths=btn.querySelectorAll('path');
+        btn.classList.toggle('on',isSaved);
+        btn.style.borderColor=isSaved?'#4F6EF7':'';
+        btn.style.background=isSaved?'rgba(79,110,247,0.06)':'';
+        if(svg){svg.setAttribute('stroke',isSaved?'#4F6EF7':'var(--text-disabled)');svg.setAttribute('stroke-width',isSaved?'2.5':'2');}
+        paths.forEach(p=>{p.setAttribute('fill',isSaved?'rgba(79,110,247,0.15)':'none');p.setAttribute('stroke',isSaved?'#4F6EF7':'var(--text-disabled)');});
+      }
+    }
+  });
+}
+
+function renderSaved(){
+  const scroll=document.getElementById('saved-scroll');
+  if(!scroll) return;
+  if(savedMeds.size===0){
+    scroll.innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center">
+        <div style="width:72px;height:72px;background:var(--color-purple-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 style="margin-bottom:8px;color:var(--text-primary)">No saved medications yet</h3>
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px">Bookmark medications from your search results to access them here</p>
+        <button class="btn" style="max-width:200px;padding:12px 24px;font-size:14px;border-radius:100px;width:auto" onclick="clearSearch();goTo('search')">Search Medications</button>
+      </div>`;
+    return;
+  }
+  const PILL_ICO=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 L3.5 13.5 a5 5 0 0 1 7.07-7.07 L17.5 13.5 a5 5 0 0 1-7.07 7.07z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>`;
+  scroll.innerHTML=`<p style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">${savedMeds.size} saved medication${savedMeds.size>1?'s':''}</p>`
+  +Array.from(savedMeds.entries()).map(([key,med])=>{
+    const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
+    const liveIdx=liveResults.findIndex(m=>m.brand_name===med.brand_name);
+    return `<div class="rcard" style="margin-bottom:12px;cursor:pointer" onclick="openSavedMed('${key.replace(/'/g,"\\'")}')">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;background:#4F6EF7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${PILL_ICO}</div>
+        <div style="flex:1;min-width:0">
+          <p style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:2px">${displayName}</p>
+          <p style="font-size:12px;color:var(--text-secondary)">${med.manufacturer||'Unknown'} · ${med.inn}</p>
+        </div>
+        <button onclick="event.stopPropagation();removeSaved('${key.replace(/'/g,"\\'")}')}" style="background:var(--color-error-tint);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-error)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="m100" style="font-size:11px">Saved</span>
+        <span style="font-size:12px;color:var(--text-secondary)">${selC||'your destination'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openSavedMed(key){
+  const med=savedMeds.get(key);
+  if(!med) return;
+  currentDetailMed=med;
+  // Push into liveResults temporarily if not already there
+  let idx=liveResults.findIndex(m=>m.brand_name===med.brand_name);
+  if(idx===-1){ liveResults.push(med); idx=liveResults.length-1; }
+  navHistory.push('saved');
+  goToLiveDetail(idx);
+}
+
+function removeSaved(key){
+  saved.delete(key);
+  savedMeds.delete(key);
+  // Unsave in results list too
+  liveResults.forEach((m,i)=>{
+    if(m.brand_name===key){
+      const btn=document.getElementById('bm-'+i);
+      if(btn){
+        btn.classList.remove('on');btn.style.borderColor='';btn.style.background='';
+        const svg=btn.querySelector('svg');const paths=btn.querySelectorAll('path');
+        if(svg){svg.setAttribute('stroke','var(--text-disabled)');svg.setAttribute('stroke-width','2');}
+        paths.forEach(p=>{p.setAttribute('fill','none');p.setAttribute('stroke','var(--text-disabled)');});
+      }
+    }
+  });
+  renderSaved();
 }
 
 // ── Brand name → INN mapping ─────────────────────────────
@@ -1600,6 +1722,7 @@ const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 // Cache & debounce
 let searchCache={};
 let searchTimer=null;
+let searchDebounceTimer=null;
 let liveResults=[];
 
 async function querySupabase(term, rawInput){
@@ -1607,7 +1730,6 @@ async function querySupabase(term, rawInput){
   if(searchCache[cacheKey]) return searchCache[cacheKey];
   const q=(rawInput||term).toLowerCase().trim();
   const t=term.toLowerCase().trim();
-
   // Get destination country code from the UI
   const destEl=document.getElementById('ts-dest-val');
   const destText=destEl?destEl.textContent.trim():'';
@@ -1719,12 +1841,20 @@ const MOCK_DB={
 };
 
 function getMockResults(inn, countryCode){
+  // Return all mock results for this INN — country filtering is for the real DB only.
+  // This ensures the demo always shows results regardless of which country is selected.
   const allForInn=MOCK_DB[inn]||[];
-  // Filter by country if we have one, else return all
-  let results=countryCode?allForInn.filter(m=>m.country_code===countryCode):allForInn;
-  // If country filter returns nothing, broaden to all countries for that INN
-  if(results.length===0) results=allForInn;
-  return results;
+  if(allForInn.length>0) return allForInn;
+  // If no exact INN match, do a partial search across all entries
+  const partial=[];
+  for(const entries of Object.values(MOCK_DB)){
+    for(const m of entries){
+      if(m.inn.includes(inn)||m.brand_name.toLowerCase().includes(inn)){
+        partial.push(m);
+      }
+    }
+  }
+  return partial;
 }
 
 // Map country names to ISO codes for filtering
@@ -1811,16 +1941,18 @@ function renderLiveResults(results, query){
     const safetyTxt=safetyText(med,score);
     const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
     const sub=`${med.manufacturer||'Unknown'} · ${med.inn}`;
-    return `<div class="rcard" style="margin-bottom:12px" onclick="goToLiveDetail(${i})">
-      <div class="bm" id="bm-${i}" onclick="event.stopPropagation();toggleBm(${i})">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    return `<div class="rcard" style="margin-bottom:12px;position:relative" onclick="goToLiveDetail(${i})">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <span class="${badge}">${score}% Match</span>
         <span class="dot ${level.dot}"></span>
         <span style="font-size:13px;color:${level.col};font-weight:600">${level.label}</span>
       </div>
-      <h3 style="margin-bottom:4px">${displayName}</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px">
+        <h3 style="margin:0;flex:1">${displayName}</h3>
+        <button class="bm" id="bm-${i}" onclick="event.stopPropagation();toggleBm(${i})" style="position:relative;top:auto;right:auto;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
+      </div>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">${sub}</p>
       <div class="${safetyClass}"><p class="nt">${safetyTxt}</p></div>
     </div>`;
@@ -1836,6 +1968,7 @@ function renderLiveResults(results, query){
 function goToLiveDetail(i){
   const med=liveResults[i];
   if(!med) return;
+  currentDetailMed=med;
   const score=scoreMatch(med, document.getElementById('sinput')?.value||med.inn);
   document.getElementById('d-name').textContent=med.brand_name;
   document.getElementById('d-mfr').textContent=med.manufacturer||'Unknown';
@@ -1856,59 +1989,81 @@ function goToLiveDetail(i){
   document.getElementById('d-warnings').innerHTML=warnings.slice(0,3).map(w=>`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px">${typeof w==='string'?w.slice(0,120)+'…':w}</p></div>`).join('');
   document.getElementById('d-benefits').innerHTML=`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal-dark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg><p style="font-size:13px">Verified by OpenFDA drug label database</p></div>`;
   goTo('detail');
+  // Sync detail bookmark button state
+  setTimeout(()=>updateDetailBm(saved.has(med.brand_name)),0);
 }
 
-let searchDebounceTimer=null;
-
 async function handleSearch(v){
-  const ss=document.getElementById('s-sugg'),sr=document.getElementById('s-recent'),sl=document.getElementById('s-sugg-list');
+  const ss=document.getElementById('s-sugg');
+  const sr=document.getElementById('s-recent');
+  const sl=document.getElementById('s-sugg-list');
   const preview=document.getElementById('s-ai-preview');
   const noRes=document.getElementById('s-no-results');
+  const previewCards=document.getElementById('s-preview-cards');
 
-  if(v.length>2){
-    ss.style.display='block';sr.style.display='none';
-    if(preview)preview.style.display='none';
-    const bb=document.getElementById('search-back-btn');if(bb)bb.style.display='none';
-    const sp=document.getElementById('search-spacer');if(sp)sp.style.display='block';
+  if(v.length<2){
+    if(ss) ss.style.display='none';
+    if(preview) preview.style.display='none';
+    if(sr) sr.style.display='block';
+    return;
+  }
 
-    // Show loading state
-    sl.style.display='flex';
-    sl.innerHTML=`<div style="padding:12px;display:flex;align-items:center;gap:10px"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite"></span><span style="font-size:14px;color:var(--text-secondary)">Searching medications...</span></div>`;
-    if(noRes) noRes.style.display='none';
+  // Hide recents, show suggestions area with loading
+  if(sr) sr.style.display='none';
+  if(ss) ss.style.display='block';
+  if(preview) preview.style.display='none';
+  if(sl){ sl.style.display='flex'; sl.innerHTML=`<div style="padding:12px;display:flex;align-items:center;gap:10px"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite"></span><span style="font-size:14px;color:var(--text-secondary)">Finding equivalents...</span></div>`; }
+  if(noRes) noRes.style.display='none';
 
-    // Debounce — wait 350ms after user stops typing
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer=setTimeout(async()=>{
-      const searchTerm=resolveSearchTerm(v);
-      console.log('Searching for:', searchTerm, '(original:', v, ')');
-      const results=await querySupabase(searchTerm, v);
-      console.log('Results:', results.length);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer=setTimeout(async()=>{
+    const searchTerm=resolveSearchTerm(v);
+    const results=await querySupabase(searchTerm, v);
+    const unique=[...new Map(results.map(m=>[m.brand_name.toLowerCase(),m])).values()];
 
-      if(results.length>0){
-        // Deduplicate by INN, keep highest scored
-        const seen=new Set();
-        const unique=results.filter(m=>{
-          const key=m.inn+m.brand_name.toLowerCase();
-          if(seen.has(key)) return false;
-          seen.add(key); return true;
-        });
+    console.log('Results for', v, '→', searchTerm, ':', unique.length, 'unique');
 
-        sl.innerHTML=unique.slice(0,6).map(med=>{
+    if(unique.length>0){
+      liveResults=unique;
+
+      // Show results directly in the suggestion list — tap any to go to detail
+      if(sl){
+        sl.innerHTML=unique.slice(0,6).map((med,i)=>{
+          const score=scoreMatch(med,searchTerm);
+          const level=matchLevel(score);
+          const badge=matchBadgeClass(score);
           const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
-          return `<button class="sugg" onclick="selectMedLive('${med.inn}','${med.brand_name.replace(/'/g,"\\'")}')">
-            <div class="sugg-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 L3.5 13.5 a5 5 0 0 1 7.07-7.07 L17.5 13.5 a5 5 0 0 1-7.07 7.07z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg></div>
-            <div><span style="font-size:15px;font-weight:500;color:var(--text-primary)">${displayName}</span><br><span style="font-size:12px;color:var(--text-secondary)">${med.inn} · ${med.manufacturer||'Unknown'}</span></div>
-          </button>`;
+          return `<div class="rcard" style="cursor:pointer;padding:14px;position:relative" onclick="goToLiveDetail(${i})">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+              <span style="font-size:15px;font-weight:700;color:var(--text-primary);flex:1">${displayName}</span>
+              <button class="bm" id="bm-${i}" onclick="event.stopPropagation();toggleBm(${i})" style="position:relative;top:auto;right:auto;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </button>
+            </div>
+            <p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">${med.manufacturer||'Unknown'} · ${med.inn}</p>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="${badge}" style="font-size:11px">${score}%</span>
+              <span class="dot ${level.dot}"></span>
+              <span style="font-size:12px;font-weight:600;color:${level.col}">${level.label}</span>
+            </div>
+          </div>`;
         }).join('');
-        if(noRes) noRes.style.display='none';
         sl.style.display='flex';
-      } else {
-        sl.style.display='none';
-        if(noRes) noRes.style.display='block';
+        sl.style.flexDirection='column';
+        sl.style.gap='8px';
       }
-    }, 350);
 
-  }else{ss.style.display='none';sr.style.display='block';}
+      if(noRes) noRes.style.display='none';
+
+      // Add to recents
+      const term=v.trim();
+      if(!recents.includes(term)){recents.unshift(term);if(recents.length>5)recents.pop();}
+
+    } else {
+      if(sl) sl.style.display='none';
+      if(noRes) noRes.style.display='block';
+    }
+  }, 400);
 }
 
 async function selectMedLive(inn, brandName){
@@ -1940,9 +2095,9 @@ async function selectMedLive(inn, brandName){
     liveResults=unique;
 
     // Build preview cards
-    const previewList=document.querySelector('#s-ai-preview > div:nth-child(2)');
-    if(previewList){
-      previewList.innerHTML=unique.slice(0,3).map((med,i)=>{
+    const previewCards=document.getElementById('s-preview-cards');
+    if(previewCards){
+      previewCards.innerHTML=unique.slice(0,3).map((med,i)=>{
         const score=scoreMatch(med,inn);
         const badge=matchBadgeClass(score);
         const level=matchLevel(score);
@@ -2008,19 +2163,55 @@ function toggleTheme(){
 }
 
 function renderPharmacyCards(){
-  const list=document.getElementById('ph-card-list');
-  if(!list) return;
+  // Clear search input and reset to show all pharmacies
+  const inp=document.getElementById('ph-search-input');
+  if(inp) inp.value='';
+  filterPharmacies('');
+}
+
+
+
+
+function phFilter(f){
+  document.querySelectorAll('.ph-chip').forEach(c=>c.classList.remove('ph-chip-on'));
+  const el=document.getElementById('ph-f-'+f);
+  if(el) el.classList.add('ph-chip-on');
+  // Re-render with current search term
+  const q=document.getElementById('ph-search-input')?.value||'';
+  filterPharmacies(q);
+}
+
+function filterPharmacies(q){
   const key=selC||'United States';
   const dest=DEST_MAP[key]||DEST_MAP['United States'];
+  const activeFilter=document.querySelector('.ph-chip-on')?.id||'';
+  let pharmacies=dest.pharmacies.filter(p=>{
+    if(q && !p.name.toLowerCase().includes(q.toLowerCase())) return false;
+    if(activeFilter==='ph-f-open') return p.open;
+    if(activeFilter==='ph-f-24h') return p.hours==='Open 24 hours';
+    return true;
+  });
+  if(activeFilter==='ph-f-nearest') pharmacies=[...pharmacies].sort((a,b)=>parseFloat(a.dist)-parseFloat(b.dist));
+  renderPharmacyList(pharmacies);
+}
+
+function renderPharmacyList(pharmacies){
+  const list=document.getElementById('ph-card-list');
+  if(!list) return;
   const GO_ICO=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
   const CALL_ICO=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>`;
   const PLUS_ICO=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>`;
 
-  list.innerHTML=dest.pharmacies.map((p,i)=>{
+  if(pharmacies.length===0){
+    list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">No pharmacies match your search</p></div>`;
+    return;
+  }
+
+  list.innerHTML=pharmacies.map((p,i)=>{
     const stockBadge=i<2?`<span style="background:var(--color-teal-tint);color:var(--on-teal-tint);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px">Stocks this med</span>`:'';
     const openColor=p.open?'#16A34A':'#9CA3AF';
     const openText=p.open?p.hours:`Closed · ${p.hours}`;
-    return `<div class="ph-card-v2" onclick="this.style.background='var(--surface-input)';setTimeout(()=>this.style.background='',200)">
+    return `<div class="ph-card-v2">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="width:46px;height:46px;background:var(--color-teal-tint);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--color-teal-light)">${PLUS_ICO}</div>
         <div style="flex:1;min-width:0">
@@ -2047,24 +2238,229 @@ function renderPharmacyCards(){
   </div>`;
 }
 
+// ── Pharmacy search — filters by name OR geocodes a city ──────────────────
+let pharmSearchTimer=null;
 
-
-
-function phFilter(f){
-  document.querySelectorAll('.ph-chip').forEach(c=>c.classList.remove('ph-chip-on'));
-  const el=document.getElementById('ph-f-'+f);
-  if(el) el.classList.add('ph-chip-on');
+function handlePharmSearch(v){
+  if(!v.trim()){
+    filterPharmacies('');
+    return;
+  }
+  // First try filtering current pharmacy names
+  const key=selC||'United States';
+  const dest=DEST_MAP[key]||DEST_MAP['United States'];
+  const nameMatches=dest.pharmacies.filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
+  if(nameMatches.length>0){
+    renderPharmacyList(nameMatches);
+    return;
+  }
+  // Otherwise treat as a city/location search — debounce then geocode
+  clearTimeout(pharmSearchTimer);
+  pharmSearchTimer=setTimeout(()=>geocodeCity(v), 600);
 }
-function switchPharmSheet(){
-  const sheet=document.getElementById('ph-sheet');
-  const controls=document.getElementById('ph-map-controls');
-  const collapsed=sheet.style.maxHeight==='80px';
-  sheet.style.maxHeight=collapsed?'':'80px';
-  // Reposition controls: collapsed sheet = low, expanded = high
-  const newBottom=collapsed?'420px':'110px';
-  if(controls) controls.style.bottom=newBottom;
-  document.querySelectorAll('[style*="left:12px;bottom"]').forEach(el=>el.style.bottom=newBottom);
+
+// City → pharmacy data for key Canadian cities + major world cities
+const CITY_MAP={
+  // Canada
+  'vancouver':{lat:49.2827,lng:-123.1207,zoom:14,country:'Canada',pharmacies:[
+    {lat:49.2840,lng:-123.1190,name:'Shoppers Drug Mart Robson',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:49.2815,lng:-123.1225,name:'London Drugs',dist:'0.5 km',open:true,hours:'Open until 21:00'},
+    {lat:49.2855,lng:-123.1170,name:'Rexall West End',dist:'0.8 km',open:false,hours:'Opens 09:00'},
+    {lat:49.2800,lng:-123.1240,name:'Pharmasave Granville',dist:'1.2 km',open:true,hours:'Open until 20:00'},
+    {lat:49.2868,lng:-123.1155,name:'Shoppers Drug Mart Davie',dist:'1.5 km',open:true,hours:'Open 24 hours'},
+    {lat:49.2790,lng:-123.1255,name:'Guardian Pharmacy',dist:'1.9 km',open:false,hours:'Opens 09:00'},
+  ]},
+  'montreal':{lat:45.5017,lng:-73.5673,zoom:14,country:'Canada',pharmacies:[
+    {lat:45.5030,lng:-73.5655,name:'Pharmaprix Ste-Catherine',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:45.5005,lng:-73.5690,name:'Jean Coutu Plateau',dist:'0.6 km',open:true,hours:'Open until 21:00'},
+    {lat:45.5045,lng:-73.5638,name:'Uniprix Centre-Ville',dist:'1.0 km',open:false,hours:'Opens 08:30'},
+    {lat:45.4990,lng:-73.5708,name:'Pharmaprix Peel',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:45.5058,lng:-73.5622,name:'Familiprix Mont-Royal',dist:'1.8 km',open:true,hours:'Open until 20:00'},
+    {lat:45.4975,lng:-73.5725,name:'Jean Coutu Berri',dist:'2.2 km',open:false,hours:'Opens 09:00'},
+  ]},
+  'calgary':{lat:51.0447,lng:-114.0719,zoom:14,country:'Canada',pharmacies:[
+    {lat:51.0460,lng:-114.0700,name:'Shoppers Drug Mart 17th Ave',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:51.0433,lng:-114.0738,name:'Remedy\'s Rx',dist:'0.7 km',open:true,hours:'Open until 20:00'},
+    {lat:51.0475,lng:-114.0682,name:'Rexall Kensington',dist:'1.1 km',open:false,hours:'Opens 09:00'},
+    {lat:51.0420,lng:-114.0755,name:'Pharmasave Inglewood',dist:'1.5 km',open:true,hours:'Open until 21:00'},
+    {lat:51.0488,lng:-114.0666,name:'Costco Pharmacy NW',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:51.0407,lng:-114.0772,name:'Guardian Pharmacy',dist:'2.3 km',open:false,hours:'Opens 09:00'},
+  ]},
+  'ottawa':{lat:45.4215,lng:-75.6972,zoom:14,country:'Canada',pharmacies:[
+    {lat:45.4228,lng:-75.6955,name:'Shoppers Drug Mart ByWard',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:45.4202,lng:-75.6989,name:'Pharmaprix Elgin',dist:'0.6 km',open:true,hours:'Open until 21:00'},
+    {lat:45.4242,lng:-75.6938,name:'Rexall Rideau',dist:'1.0 km',open:false,hours:'Opens 09:00'},
+    {lat:45.4188,lng:-75.7005,name:'Familiprix Gatineau',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:45.4255,lng:-75.6922,name:'Costco Pharmacy',dist:'1.8 km',open:true,hours:'Open until 20:00'},
+    {lat:45.4175,lng:-75.7020,name:'Guardian Drugs',dist:'2.2 km',open:false,hours:'Opens 09:00'},
+  ]},
+  'edmonton':{lat:53.5461,lng:-113.4938,zoom:14,country:'Canada',pharmacies:[
+    {lat:53.5475,lng:-113.4920,name:'Shoppers Drug Mart Whyte Ave',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:53.5447,lng:-113.4956,name:'Remedy\'s Rx',dist:'0.7 km',open:true,hours:'Open until 20:00'},
+    {lat:53.5489,lng:-113.4903,name:'Rexall Jasper Ave',dist:'1.1 km',open:false,hours:'Opens 09:00'},
+    {lat:53.5433,lng:-113.4972,name:'London Drugs',dist:'1.5 km',open:true,hours:'Open until 21:00'},
+    {lat:53.5502,lng:-113.4887,name:'Costco Pharmacy',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:53.5420,lng:-113.4988,name:'Guardian Pharmacy',dist:'2.3 km',open:false,hours:'Opens 09:00'},
+  ]},
+  // UK cities
+  'manchester':{lat:53.4808,lng:-2.2426,zoom:14,country:'United Kingdom',pharmacies:[
+    {lat:53.4820,lng:-2.2410,name:'Boots Piccadilly',dist:'0.3 km',open:true,hours:'Open until 21:00'},
+    {lat:53.4795,lng:-2.2442,name:'LloydsPharmacy Deansgate',dist:'0.6 km',open:true,hours:'Open until 19:00'},
+    {lat:53.4835,lng:-2.2395,name:'Well Pharmacy Northern Quarter',dist:'1.0 km',open:false,hours:'Opens 09:00'},
+    {lat:53.4780,lng:-2.2458,name:'Superdrug',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:53.4848,lng:-2.2380,name:'Rowlands Pharmacy',dist:'1.8 km',open:true,hours:'Open until 20:00'},
+    {lat:53.4768,lng:-2.2473,name:'Day Lewis Pharmacy',dist:'2.2 km',open:false,hours:'Opens 09:00'},
+  ]},
+  // German cities
+  'munich':{lat:48.1351,lng:11.5820,zoom:14,country:'Germany',pharmacies:[
+    {lat:48.1365,lng:11.5838,name:'Apotheke am Marienplatz',dist:'0.3 km',open:true,hours:'Open until 20:00'},
+    {lat:48.1338,lng:11.5802,name:'Ludwigs-Apotheke',dist:'0.6 km',open:true,hours:'Open until 18:30'},
+    {lat:48.1378,lng:11.5855,name:'Notfall Apotheke Schwabing',dist:'1.0 km',open:true,hours:'Open 24 hours'},
+    {lat:48.1325,lng:11.5785,name:'Apotheke Sendlinger Tor',dist:'1.4 km',open:false,hours:'Opens 08:00'},
+    {lat:48.1390,lng:11.5872,name:'Stadt-Apotheke',dist:'1.8 km',open:true,hours:'Open until 19:00'},
+    {lat:48.1312,lng:11.5768,name:'Apotheke am Stachus',dist:'2.2 km',open:false,hours:'Opens 08:30'},
+  ]},
+  // French cities
+  'lyon':{lat:45.7640,lng:4.8357,zoom:14,country:'France',pharmacies:[
+    {lat:45.7655,lng:4.8372,name:'Pharmacie Bellecour',dist:'0.3 km',open:true,hours:'Open until 20:00'},
+    {lat:45.7625,lng:4.8340,name:'Grande Pharmacie des Terreaux',dist:'0.6 km',open:true,hours:'Open until 19:30'},
+    {lat:45.7668,lng:4.8388,name:'Pharmacie de Garde',dist:'1.0 km',open:true,hours:'Open 24 hours'},
+    {lat:45.7612,lng:4.8325,name:'Pharmacie Part-Dieu',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:45.7682,lng:4.8405,name:'Pharmacie Croix-Rousse',dist:'1.8 km',open:true,hours:'Open until 20:00'},
+    {lat:45.7598,lng:4.8308,name:'Pharmacie Guillotière',dist:'2.2 km',open:false,hours:'Opens 08:30'},
+  ]},
+};
+
+// Geocode a city name using Nominatim, then fly the map there
+async function geocodeCity(query){
+  const list=document.getElementById('ph-card-list');
+  if(list) list.innerHTML=`<div style="padding:16px;text-align:center;display:flex;align-items:center;gap:10px;justify-content:center"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite;flex-shrink:0"></span><span style="font-size:14px;color:var(--text-secondary)">Searching location...</span></div>`;
+
+  // Check our city map first (instant, no network)
+  const cityKey=query.toLowerCase().trim();
+  const cityMatch=Object.keys(CITY_MAP).find(k=>cityKey.includes(k)||k.includes(cityKey));
+  if(cityMatch){
+    const city=CITY_MAP[cityMatch];
+    flyToCity(city.lat, city.lng, city.zoom||14, city.pharmacies);
+    return;
+  }
+
+  // Fall back to Nominatim geocoding for any other city
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,{headers:{'Accept-Language':'en'}});
+    const data=await res.json();
+    if(data&&data.length>0){
+      const {lat,lon,display_name}=data[0];
+      flyToCity(parseFloat(lat), parseFloat(lon), 14, null, display_name);
+    } else {
+      if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">Location not found. Try a city name.</p></div>`;
+    }
+  }catch(e){
+    // Network blocked — show helpful message
+    if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px">Try: Vancouver, Montreal, Calgary</p><p style="font-size:13px;color:var(--text-secondary)">Or Munich, Lyon, Manchester</p></div>`;
+  }
 }
+
+function flyToCity(lat, lng, zoom, pharmacies, locationName){
+  if(!leafletMap) return;
+  leafletMap.flyTo([lat,lng], zoom||14, {animate:true,duration:1.2});
+  // Clear old markers and add new ones
+  leafletMap.eachLayer(layer=>{
+    if(layer instanceof L.Marker||layer instanceof L.CircleMarker) leafletMap.removeLayer(layer);
+  });
+  function makeIcon(color){
+    return L.divIcon({className:'',html:`<div style="width:34px;height:34px;background:${color};border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg></div>`,iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]});
+  }
+  const pharmsToShow=pharmacies||(DEST_MAP[selC]||DEST_MAP['United States']).pharmacies;
+  pharmsToShow.forEach(p=>{
+    const icon=makeIcon(p.open?'#16A34A':'#9CA3AF');
+    const popup=`<div style="font-family:-apple-system,sans-serif;min-width:140px"><p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:${p.open?'#16A34A':'#6B7280'};margin:0 0 2px;font-weight:600">${p.hours}</p><p style="font-size:11px;color:#6B7280;margin:0">${p.dist} away</p></div>`;
+    L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(popup);
+  });
+  L.circleMarker([lat,lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1}).addTo(leafletMap).bindPopup(`<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">${locationName||'Searched location'}</p>`);
+  renderPharmacyList(pharmsToShow);
+}
+
+// ── Bottom sheet — iOS-style snap with two positions ─────────────────────
+// PEEK  (~160px): handle + search + chips visible, list hidden
+// EXPANDED (~400px): full list visible, map still shows above
+// Nav bar (~70px) is always visible underneath — sheet never covers it.
+
+(function(){
+  const PEEK=160;
+  const EXPANDED=400;
+  const SNAP_THRESHOLD=60; // px of movement needed to snap
+  let expanded=true;
+  let dragStartY=0, dragStartH=0, dragging=false;
+
+  function getSheet(){ return document.getElementById('ph-sheet'); }
+
+  function snapTo(h, animate){
+    const sheet=getSheet();
+    if(!sheet) return;
+    if(animate){
+      sheet.style.transition='height .35s cubic-bezier(.32,1,.23,1)';
+      setTimeout(()=>{ sheet.style.transition=''; },380);
+    } else {
+      sheet.style.transition='none';
+    }
+    sheet.style.height=h+'px';
+    expanded=(h===EXPANDED);
+    setTimeout(()=>{ if(window.leafletMap) window.leafletMap.invalidateSize(); },400);
+  }
+
+  function initSheetSwipe(){
+    const handle=document.getElementById('ph-sheet-handle');
+    const sheet=getSheet();
+    if(!handle||!sheet||handle._swipeInit) return;
+    handle._swipeInit=true;
+
+    // Set initial height
+    sheet.style.height=EXPANDED+'px';
+    sheet.style.overflow='hidden';
+
+    function onStart(y){
+      dragStartY=y;
+      dragStartH=sheet.offsetHeight||EXPANDED;
+      dragging=true;
+      sheet.style.transition='none';
+    }
+    function onMove(y){
+      if(!dragging) return;
+      const dy=dragStartY-y; // positive = swipe up = expand
+      const newH=Math.min(EXPANDED, Math.max(PEEK, dragStartH+dy));
+      sheet.style.height=newH+'px';
+    }
+    function onEnd(y){
+      if(!dragging) return;
+      dragging=false;
+      const dy=dragStartY-y;
+      if(dy > SNAP_THRESHOLD) snapTo(EXPANDED, true);       // swiped up → expand
+      else if(dy < -SNAP_THRESHOLD) snapTo(PEEK, true);     // swiped down → peek
+      else snapTo(expanded?EXPANDED:PEEK, true);            // not enough movement → snap back
+    }
+
+    handle.addEventListener('touchstart', e=>onStart(e.touches[0].clientY), {passive:true});
+    handle.addEventListener('touchmove',  e=>onMove(e.touches[0].clientY),  {passive:true});
+    handle.addEventListener('touchend',   e=>onEnd(e.changedTouches[0].clientY), {passive:true});
+    handle.addEventListener('mousedown',  e=>{ onStart(e.clientY); e.preventDefault(); });
+    document.addEventListener('mousemove',e=>{ if(dragging) onMove(e.clientY); });
+    document.addEventListener('mouseup',  e=>{ if(dragging) onEnd(e.clientY); });
+  }
+
+  // Re-init every time pharmacies page becomes active
+  const _goTo=window.goTo;
+  // Patch goTo after script loads
+  setTimeout(()=>{
+    const origGoTo=goTo;
+    window.goTo=function(p,...args){
+      origGoTo(p,...args);
+      if(p==='pharmacies') setTimeout(initSheetSwipe, 100);
+    };
+    // Also init immediately in case we're already on pharmacies
+    initSheetSwipe();
+  }, 0);
+})();
 
 // City coordinates and pharmacies by destination country
 const DEST_MAP={
@@ -2073,183 +2469,242 @@ const DEST_MAP={
     {lat:41.0352,lng:28.9891,name:'Özlem Pharmacy',dist:'0.7 km',open:true,hours:'Open until 20:00'},
     {lat:41.0330,lng:28.9810,name:'Güven Eczanesi',dist:'1.2 km',open:false,hours:'Opens 09:00'},
     {lat:41.0405,lng:28.9940,name:'Sağlık Pharmacy',dist:'1.8 km',open:true,hours:'Open 24 hours'},
+    {lat:41.0310,lng:28.9760,name:'Bağcılar Eczanesi',dist:'2.2 km',open:true,hours:'Open until 21:00'},
+    {lat:41.0420,lng:28.9780,name:'Yıldız Pharmacy',dist:'2.7 km',open:false,hours:'Opens 08:30'},
   ]},
   'Canada':       {lat:43.6532,lng:-79.3832,zoom:14,pharmacies:[
     {lat:43.6550,lng:-79.3800,name:'Shoppers Drug Mart',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:43.6510,lng:-79.3860,name:'Rexall Pharmacy',dist:'0.6 km',open:true,hours:'Open until 21:00'},
     {lat:43.6490,lng:-79.3750,name:'Pharmasave',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:43.6580,lng:-79.3900,name:'Costco Pharmacy',dist:'1.5 km',open:true,hours:'Open until 20:00'},
+    {lat:43.6460,lng:-79.3920,name:'Loblaw Pharmacy',dist:'2.0 km',open:true,hours:'Open until 22:00'},
+    {lat:43.6600,lng:-79.3830,name:'Guardian Drugs',dist:'2.4 km',open:false,hours:'Opens 09:30'},
   ]},
   'United Kingdom':{lat:51.5074,lng:-0.1278,zoom:14,pharmacies:[
     {lat:51.5090,lng:-0.1260,name:'Boots Pharmacy',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:51.5060,lng:-0.1300,name:'LloydsPharmacy',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:51.5100,lng:-0.1240,name:'Well Pharmacy',dist:'0.9 km',open:false,hours:'Opens 09:00'},
     {lat:51.5040,lng:-0.1310,name:'Day Lewis Pharmacy',dist:'1.3 km',open:true,hours:'Open 24 hours'},
+    {lat:51.5115,lng:-0.1225,name:'Superdrug Pharmacy',dist:'1.8 km',open:true,hours:'Open until 20:00'},
+    {lat:51.5025,lng:-0.1325,name:'Rowlands Pharmacy',dist:'2.2 km',open:false,hours:'Opens 09:00'},
   ]},
   'Germany':      {lat:52.5200,lng:13.4050,zoom:14,pharmacies:[
     {lat:52.5220,lng:13.4070,name:'Apotheke am Markt',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:52.5180,lng:13.4030,name:'Stadt-Apotheke',dist:'0.7 km',open:true,hours:'Open until 18:30'},
     {lat:52.5240,lng:13.4090,name:'Berliner Apotheke',dist:'1.1 km',open:false,hours:'Opens 08:00'},
     {lat:52.5160,lng:13.4010,name:'Notfall Apotheke',dist:'1.6 km',open:true,hours:'Open 24 hours'},
+    {lat:52.5255,lng:13.4110,name:'Schloß-Apotheke',dist:'2.0 km',open:true,hours:'Open until 19:00'},
+    {lat:52.5145,lng:13.3990,name:'Mitte Apotheke',dist:'2.5 km',open:false,hours:'Opens 08:30'},
   ]},
   'France':       {lat:48.8566,lng:2.3522,zoom:14,pharmacies:[
     {lat:48.8580,lng:2.3540,name:'Pharmacie Centrale',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:48.8550,lng:2.3500,name:'Grande Pharmacie',dist:'0.6 km',open:true,hours:'Open until 19:30'},
     {lat:48.8600,lng:2.3560,name:'Pharmacie de Garde',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:48.8530,lng:2.3480,name:'Pharmacie du Marché',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:48.8615,lng:2.3580,name:'Pharmacie Saint-Michel',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:48.8515,lng:2.3460,name:'Pharmacie Rivoli',dist:'2.3 km',open:false,hours:'Opens 08:30'},
   ]},
   'Spain':        {lat:40.4168,lng:-3.7038,zoom:14,pharmacies:[
     {lat:40.4185,lng:-3.7020,name:'Farmacia Central',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:40.4150,lng:-3.7060,name:'Farmacia de Guardia',dist:'0.7 km',open:true,hours:'Open 24 hours'},
     {lat:40.4200,lng:-3.7000,name:'Farmacia Mayor',dist:'1.1 km',open:false,hours:'Opens 09:30'},
     {lat:40.4130,lng:-3.7080,name:'Farmacia Salud',dist:'1.5 km',open:true,hours:'Open until 21:00'},
+    {lat:40.4215,lng:-3.6980,name:'Farmacia Gran Vía',dist:'2.0 km',open:true,hours:'Open until 22:00'},
+    {lat:40.4115,lng:-3.7095,name:'Farmacia Sol',dist:'2.4 km',open:false,hours:'Opens 09:00'},
   ]},
   'Italy':        {lat:41.9028,lng:12.4964,zoom:14,pharmacies:[
     {lat:41.9045,lng:12.4980,name:'Farmacia Centrale',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:41.9010,lng:12.4950,name:'Farmacia di Turno',dist:'0.6 km',open:true,hours:'Open 24 hours'},
     {lat:41.9060,lng:12.4990,name:'Farmacia Roma',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:41.8990,lng:12.4930,name:'Farmacia Salute',dist:'1.4 km',open:true,hours:'Open until 19:30'},
+    {lat:41.9075,lng:12.5005,name:'Farmacia Colosseo',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:41.8975,lng:12.4915,name:'Farmacia Trastevere',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'United States':{lat:40.7128,lng:-74.0060,zoom:14,pharmacies:[
     {lat:40.7145,lng:-74.0040,name:'CVS Pharmacy',dist:'0.3 km',open:true,hours:'Open 24 hours'},
     {lat:40.7110,lng:-74.0080,name:'Walgreens',dist:'0.6 km',open:true,hours:'Open until 22:00'},
     {lat:40.7160,lng:-74.0020,name:'Rite Aid',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:40.7090,lng:-74.0100,name:'Duane Reade',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:40.7175,lng:-74.0005,name:'Walgreens Midtown',dist:'1.9 km',open:true,hours:'Open 24 hours'},
+    {lat:40.7075,lng:-74.0115,name:'CVS Express',dist:'2.3 km',open:false,hours:'Opens 08:00'},
   ]},
   'Argentina':    {lat:-34.6037,lng:-58.3816,zoom:14,pharmacies:[
     {lat:-34.6020,lng:-58.3800,name:'Farmacia del Pueblo',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:-34.6055,lng:-58.3830,name:'Farmacity',dist:'0.6 km',open:true,hours:'Open 24 hours'},
     {lat:-34.6010,lng:-58.3780,name:'Farmacia Central',dist:'1.0 km',open:false,hours:'Opens 08:00'},
     {lat:-34.6070,lng:-58.3850,name:'Droguería Sur',dist:'1.5 km',open:true,hours:'Open until 21:00'},
+    {lat:-34.5998,lng:-58.3765,name:'Farmacia San Martín',dist:'2.0 km',open:true,hours:'Open until 22:00'},
+    {lat:-34.6085,lng:-58.3865,name:'Farmacity Centro',dist:'2.5 km',open:false,hours:'Opens 09:00'},
   ]},
   'Australia':    {lat:-33.8688,lng:151.2093,zoom:14,pharmacies:[
     {lat:-33.8670,lng:151.2110,name:'Chemist Warehouse',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:-33.8700,lng:151.2070,name:'Priceline Pharmacy',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:-33.8650,lng:151.2130,name:'Terry White Chemmart',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:-33.8720,lng:151.2050,name:'Blooms The Chemist',dist:'1.4 km',open:true,hours:'Open until 18:00'},
+    {lat:-33.8635,lng:151.2150,name:'Discount Drug Stores',dist:'1.9 km',open:true,hours:'Open until 21:00'},
+    {lat:-33.8738,lng:151.2032,name:'My Chemist',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Austria':      {lat:48.2082,lng:16.3738,zoom:14,pharmacies:[
     {lat:48.2095,lng:16.3750,name:'Apotheke zur Mariahilf',dist:'0.3 km',open:true,hours:'Open until 18:00'},
     {lat:48.2070,lng:16.3720,name:'Stadt-Apotheke Wien',dist:'0.7 km',open:true,hours:'Open until 19:00'},
     {lat:48.2110,lng:16.3770,name:'Rosen-Apotheke',dist:'1.1 km',open:false,hours:'Opens 08:00'},
     {lat:48.2055,lng:16.3700,name:'Notdienst Apotheke',dist:'1.6 km',open:true,hours:'Open 24 hours'},
+    {lat:48.2125,lng:16.3788,name:'Stephansplatz Apotheke',dist:'2.0 km',open:true,hours:'Open until 18:30'},
+    {lat:48.2040,lng:16.3683,name:'Naschmarkt Apotheke',dist:'2.5 km',open:false,hours:'Opens 08:00'},
   ]},
   'Belgium':      {lat:50.8503,lng:4.3517,zoom:14,pharmacies:[
     {lat:50.8520,lng:4.3530,name:'Pharmacie Centrale',dist:'0.3 km',open:true,hours:'Open until 19:00'},
     {lat:50.8490,lng:4.3500,name:'Apotheek De Linde',dist:'0.6 km',open:true,hours:'Open until 18:30'},
     {lat:50.8535,lng:4.3545,name:'Pharmacie de Garde',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:50.8475,lng:4.3485,name:'Pharmacie Bruxelles',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:50.8550,lng:4.3560,name:'Apotheek Grand Place',dist:'1.9 km',open:true,hours:'Open until 19:00'},
+    {lat:50.8460,lng:4.3470,name:'Pharmacie Midi',dist:'2.3 km',open:false,hours:'Opens 08:30'},
   ]},
   'Brazil':       {lat:-23.5505,lng:-46.6333,zoom:14,pharmacies:[
     {lat:-23.5490,lng:-46.6315,name:'Droga Raia',dist:'0.3 km',open:true,hours:'Open 24 hours'},
     {lat:-23.5520,lng:-46.6350,name:'Drogasil',dist:'0.6 km',open:true,hours:'Open until 22:00'},
     {lat:-23.5475,lng:-46.6300,name:'Pague Menos',dist:'1.0 km',open:false,hours:'Opens 08:00'},
     {lat:-23.5540,lng:-46.6370,name:'Ultrafarma',dist:'1.4 km',open:true,hours:'Open until 21:00'},
+    {lat:-23.5460,lng:-46.6283,name:'Farmácias Nissei',dist:'1.9 km',open:true,hours:'Open 24 hours'},
+    {lat:-23.5555,lng:-46.6388,name:'Droga Raia Paulista',dist:'2.3 km',open:false,hours:'Opens 08:00'},
   ]},
   'China':        {lat:39.9042,lng:116.4074,zoom:14,pharmacies:[
-    {lat:39.9060,lng:116.4090,name:'国大药房 (Guoda Pharmacy)',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:39.9060,lng:116.4090,name:'国大药房 (Guoda)',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:39.9025,lng:116.4055,name:'同仁堂 (Tongrentang)',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:39.9075,lng:116.4105,name:'老百姓大药房',dist:'1.0 km',open:false,hours:'Opens 08:30'},
     {lat:39.9010,lng:116.4040,name:'海王星辰药店',dist:'1.5 km',open:true,hours:'Open 24 hours'},
+    {lat:39.9090,lng:116.4120,name:'健之佳药店',dist:'2.0 km',open:true,hours:'Open until 21:00'},
+    {lat:39.8995,lng:116.4025,name:'大参林药店',dist:'2.4 km',open:false,hours:'Opens 09:00'},
   ]},
   'Denmark':      {lat:55.6761,lng:12.5683,zoom:14,pharmacies:[
     {lat:55.6775,lng:12.5700,name:'Apotek Nørrebro',dist:'0.3 km',open:true,hours:'Open until 18:00'},
     {lat:55.6748,lng:12.5665,name:'Steno Apotek',dist:'0.7 km',open:true,hours:'Open 24 hours'},
     {lat:55.6790,lng:12.5715,name:'Glostrup Apotek',dist:'1.1 km',open:false,hours:'Opens 09:00'},
     {lat:55.6735,lng:12.5650,name:'Frederiksberg Apotek',dist:'1.5 km',open:true,hours:'Open until 17:30'},
+    {lat:55.6805,lng:12.5730,name:'Kongens Nytorv Apotek',dist:'2.0 km',open:true,hours:'Open until 18:00'},
+    {lat:55.6720,lng:12.5635,name:'Vesterbro Apotek',dist:'2.4 km',open:false,hours:'Opens 09:00'},
   ]},
   'Finland':      {lat:60.1699,lng:24.9384,zoom:14,pharmacies:[
     {lat:60.1715,lng:24.9400,name:'Yliopiston Apteekki',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:60.1683,lng:24.9365,name:'Kruununhaan Apteekki',dist:'0.6 km',open:true,hours:'Open until 19:00'},
     {lat:60.1730,lng:24.9420,name:'Kamppi Apteekki',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:60.1668,lng:24.9348,name:'Töölön Apteekki',dist:'1.4 km',open:true,hours:'Open until 18:00'},
+    {lat:60.1745,lng:24.9438,name:'Stockmann Apteekki',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:60.1653,lng:24.9332,name:'Kallio Apteekki',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Greece':       {lat:37.9838,lng:23.7275,zoom:14,pharmacies:[
     {lat:37.9852,lng:23.7290,name:'Φαρμακείο Κέντρου',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:37.9825,lng:23.7258,name:'Φαρμακείο Ακρόπολη',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:37.9868,lng:23.7308,name:'Φαρμακείο 24ωρο',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:37.9810,lng:23.7242,name:'Φαρμακείο Μοναστηράκι',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:37.9883,lng:23.7325,name:'Φαρμακείο Σύνταγμα',dist:'1.9 km',open:true,hours:'Open until 21:00'},
+    {lat:37.9795,lng:23.7226,name:'Φαρμακείο Πειραιώς',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'India':        {lat:28.6139,lng:77.2090,zoom:14,pharmacies:[
     {lat:28.6155,lng:77.2105,name:'Apollo Pharmacy',dist:'0.3 km',open:true,hours:'Open 24 hours'},
     {lat:28.6122,lng:77.2072,name:'MedPlus Health',dist:'0.6 km',open:true,hours:'Open until 22:00'},
     {lat:28.6170,lng:77.2120,name:'Fortis Pharmacy',dist:'1.0 km',open:false,hours:'Opens 08:00'},
     {lat:28.6108,lng:77.2055,name:'Netmeds Store',dist:'1.4 km',open:true,hours:'Open until 21:00'},
+    {lat:28.6185,lng:77.2138,name:'1mg Pharmacy',dist:'1.9 km',open:true,hours:'Open 24 hours'},
+    {lat:28.6093,lng:77.2038,name:'Guardian Pharmacy',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Japan':        {lat:35.6762,lng:139.6503,zoom:14,pharmacies:[
-    {lat:35.6778,lng:139.6520,name:'マツモトキヨシ (Matsukiyo)',dist:'0.3 km',open:true,hours:'Open until 22:00'},
-    {lat:35.6745,lng:139.6485,name:'スギ薬局 (Sugi)',dist:'0.6 km',open:true,hours:'Open until 21:00'},
-    {lat:35.6795,lng:139.6538,name:'ツルハドラッグ (Tsuruha)',dist:'1.0 km',open:false,hours:'Opens 09:00'},
-    {lat:35.6730,lng:139.6470,name:'ウエルシア (Welcia)',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:35.6778,lng:139.6520,name:'マツモトキヨシ',dist:'0.3 km',open:true,hours:'Open until 22:00'},
+    {lat:35.6745,lng:139.6485,name:'スギ薬局',dist:'0.6 km',open:true,hours:'Open until 21:00'},
+    {lat:35.6795,lng:139.6538,name:'ツルハドラッグ',dist:'1.0 km',open:false,hours:'Opens 09:00'},
+    {lat:35.6730,lng:139.6470,name:'ウエルシア',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:35.6810,lng:139.6555,name:'サンドラッグ',dist:'1.9 km',open:true,hours:'Open until 22:00'},
+    {lat:35.6715,lng:139.6453,name:'コスモス薬品',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Mexico':       {lat:19.4326,lng:-99.1332,zoom:14,pharmacies:[
     {lat:19.4340,lng:-99.1315,name:'Farmacias del Ahorro',dist:'0.3 km',open:true,hours:'Open 24 hours'},
     {lat:19.4312,lng:-99.1348,name:'Farmacia Guadalajara',dist:'0.6 km',open:true,hours:'Open until 22:00'},
     {lat:19.4355,lng:-99.1300,name:'Benavides',dist:'1.0 km',open:false,hours:'Opens 08:00'},
     {lat:19.4298,lng:-99.1363,name:'Farmacias Similares',dist:'1.4 km',open:true,hours:'Open until 21:00'},
+    {lat:19.4370,lng:-99.1285,name:'Farmacias del Ahorro Roma',dist:'1.9 km',open:true,hours:'Open 24 hours'},
+    {lat:19.4283,lng:-99.1378,name:'Farmacia San Pablo',dist:'2.3 km',open:false,hours:'Opens 08:00'},
   ]},
   'Netherlands':  {lat:52.3676,lng:4.9041,zoom:14,pharmacies:[
     {lat:52.3690,lng:4.9058,name:'Apotheek Centrum',dist:'0.3 km',open:true,hours:'Open until 18:00'},
     {lat:52.3662,lng:4.9024,name:'DA Drogist',dist:'0.6 km',open:true,hours:'Open until 19:00'},
     {lat:52.3705,lng:4.9072,name:'Etos Apotheek',dist:'1.0 km',open:false,hours:'Opens 08:30'},
     {lat:52.3648,lng:4.9008,name:'Boots Apotheek',dist:'1.4 km',open:true,hours:'Open until 20:00'},
+    {lat:52.3718,lng:4.9086,name:'Apotheek Jordaan',dist:'1.9 km',open:true,hours:'Open until 18:00'},
+    {lat:52.3635,lng:4.8993,name:'Apotheek De Pijp',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'New Zealand':  {lat:-36.8485,lng:174.7633,zoom:14,pharmacies:[
     {lat:-36.8470,lng:174.7650,name:'Unichem Pharmacy',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:-36.8500,lng:174.7615,name:'Life Pharmacy',dist:'0.6 km',open:true,hours:'Open until 18:00'},
     {lat:-36.8455,lng:174.7668,name:'Green Cross Health',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:-36.8515,lng:174.7598,name:'Chemist Warehouse NZ',dist:'1.4 km',open:true,hours:'Open until 21:00'},
+    {lat:-36.8440,lng:174.7685,name:'Amcal Pharmacy',dist:'1.9 km',open:true,hours:'Open until 19:00'},
+    {lat:-36.8530,lng:174.7580,name:'Bargain Chemist',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Norway':       {lat:59.9139,lng:10.7522,zoom:14,pharmacies:[
     {lat:59.9155,lng:10.7538,name:'Apotek 1',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:59.9122,lng:10.7505,name:'Vitusapotek',dist:'0.6 km',open:true,hours:'Open until 18:00'},
     {lat:59.9170,lng:10.7555,name:'Boots Apotek',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:59.9108,lng:10.7490,name:'Ditt Apotek',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:59.9185,lng:10.7572,name:'Apotek 1 Sentrum',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:59.9093,lng:10.7475,name:'Vitus Apotek Karl Johans',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Poland':       {lat:52.2297,lng:21.0122,zoom:14,pharmacies:[
     {lat:52.2312,lng:21.0138,name:'Apteka Centrum',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:52.2282,lng:21.0105,name:'DOZ Apteka',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:52.2328,lng:21.0155,name:'Apteka Melissa',dist:'1.0 km',open:false,hours:'Opens 08:00'},
     {lat:52.2268,lng:21.0088,name:'Apteka 24h',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:52.2343,lng:21.0172,name:'Apteka Dbam o Zdrowie',dist:'1.9 km',open:true,hours:'Open until 21:00'},
+    {lat:52.2253,lng:21.0072,name:'Apteka Gemini',dist:'2.3 km',open:false,hours:'Opens 08:30'},
   ]},
   'Portugal':     {lat:38.7169,lng:-9.1395,zoom:14,pharmacies:[
     {lat:38.7185,lng:-9.1378,name:'Farmácia Barros',dist:'0.3 km',open:true,hours:'Open until 20:00'},
     {lat:38.7152,lng:-9.1412,name:'Farmácia Moderna',dist:'0.6 km',open:true,hours:'Open until 19:00'},
     {lat:38.7200,lng:-9.1360,name:'Farmácia de Serviço',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:38.7138,lng:-9.1428,name:'Farmácia Central',dist:'1.4 km',open:false,hours:'Opens 09:00'},
+    {lat:38.7215,lng:-9.1343,name:'Farmácia Rodrigues',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:38.7123,lng:-9.1443,name:'Farmácia Chiado',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Singapore':    {lat:1.3521,lng:103.8198,zoom:14,pharmacies:[
     {lat:1.3538,lng:103.8215,name:'Guardian Pharmacy',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:1.3505,lng:103.8180,name:'Watsons Pharmacy',dist:'0.6 km',open:true,hours:'Open until 21:00'},
     {lat:1.3552,lng:103.8230,name:'Unity Pharmacy',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:1.3490,lng:103.8165,name:'Raffles Pharmacy',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:1.3565,lng:103.8245,name:'Guardian Orchard',dist:'1.9 km',open:true,hours:'Open until 22:00'},
+    {lat:1.3475,lng:103.8150,name:'Watsons Bugis',dist:'2.3 km',open:false,hours:'Opens 10:00'},
   ]},
   'South Korea':  {lat:37.5665,lng:126.9780,zoom:14,pharmacies:[
     {lat:37.5682,lng:126.9797,name:'온누리약국 (Onnuri)',dist:'0.3 km',open:true,hours:'Open until 21:00'},
     {lat:37.5648,lng:126.9762,name:'GS 약국',dist:'0.6 km',open:true,hours:'Open until 22:00'},
     {lat:37.5698,lng:126.9815,name:'세종약국 (Sejong)',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:37.5632,lng:126.9745,name:'약국 24시',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:37.5713,lng:126.9832,name:'명동약국 (Myeongdong)',dist:'1.9 km',open:true,hours:'Open until 21:00'},
+    {lat:37.5617,lng:126.9728,name:'홍대약국 (Hongdae)',dist:'2.3 km',open:false,hours:'Opens 10:00'},
   ]},
   'Sweden':       {lat:59.3293,lng:18.0686,zoom:14,pharmacies:[
     {lat:59.3308,lng:18.0703,name:'Apoteket AB',dist:'0.3 km',open:true,hours:'Open until 19:00'},
     {lat:59.3278,lng:18.0668,name:'Kronans Apotek',dist:'0.6 km',open:true,hours:'Open until 20:00'},
     {lat:59.3323,lng:18.0720,name:'Apotek Hjärtat',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:59.3263,lng:18.0652,name:'Lloyds Apotek',dist:'1.4 km',open:true,hours:'Open until 18:00'},
+    {lat:59.3338,lng:18.0737,name:'Apoteket T-Centralen',dist:'1.9 km',open:true,hours:'Open until 20:00'},
+    {lat:59.3248,lng:18.0635,name:'Kronans Södermalm',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
   'Switzerland':  {lat:47.3769,lng:8.5417,zoom:14,pharmacies:[
     {lat:47.3785,lng:8.5433,name:'Apotheke Bellevue',dist:'0.3 km',open:true,hours:'Open until 19:00'},
     {lat:47.3752,lng:8.5400,name:'Amavita Apotheke',dist:'0.6 km',open:true,hours:'Open until 18:30'},
     {lat:47.3800,lng:8.5450,name:'Toppharm Apotheke',dist:'1.0 km',open:true,hours:'Open 24 hours'},
     {lat:47.3738,lng:8.5383,name:'Sun Store Apotheke',dist:'1.4 km',open:false,hours:'Opens 08:00'},
+    {lat:47.3815,lng:8.5467,name:'Apotheke HB Zürich',dist:'1.9 km',open:true,hours:'Open until 21:00'},
+    {lat:47.3723,lng:8.5367,name:'Apotheke Enge',dist:'2.3 km',open:false,hours:'Opens 08:30'},
   ]},
   'Thailand':     {lat:13.7563,lng:100.5018,zoom:14,pharmacies:[
     {lat:13.7580,lng:100.5035,name:'Boots Thailand',dist:'0.3 km',open:true,hours:'Open until 22:00'},
     {lat:13.7545,lng:100.5000,name:'Watsons Thailand',dist:'0.6 km',open:true,hours:'Open until 21:00'},
     {lat:13.7595,lng:100.5052,name:'Fascino Pharmacy',dist:'1.0 km',open:false,hours:'Opens 09:00'},
     {lat:13.7530,lng:100.4983,name:'Pharmax',dist:'1.4 km',open:true,hours:'Open 24 hours'},
+    {lat:13.7610,lng:100.5068,name:'Boots Siam Paragon',dist:'1.9 km',open:true,hours:'Open until 22:00'},
+    {lat:13.7515,lng:100.4967,name:'Medicare Pharmacy',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
 };
-
 var leafletMap=null; // global so inline onclick handlers can access it
 
 function initLeafletMap(){
@@ -2261,10 +2716,10 @@ function initLeafletMap(){
     lnk.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
     document.head.appendChild(lnk);
   }
-  // Small delay to ensure the map container is visible and sized
   const dest=DEST_MAP[selC]||DEST_MAP['United States'];
   leafletMap=L.map('leaflet-map',{zoomControl:false,attributionControl:false}).setView([dest.lat,dest.lng],dest.zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafletMap);
+
   function makeIcon(color){
     return L.divIcon({
       className:'',
@@ -2272,12 +2727,55 @@ function initLeafletMap(){
       iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]
     });
   }
+
   dest.pharmacies.forEach(p=>{
     const icon=makeIcon(p.open?'#16A34A':'#9CA3AF');
     const popup=`<div style="font-family:-apple-system,sans-serif;min-width:140px"><p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:${p.open?'#16A34A':'#6B7280'};margin:0 0 2px;font-weight:600">${p.hours}</p><p style="font-size:11px;color:#6B7280;margin:0">${p.dist} away</p></div>`;
     L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(popup);
   });
-  L.circleMarker([dest.lat,dest.lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1}).addTo(leafletMap).bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">Your destination</p>');
+
+  L.circleMarker([dest.lat,dest.lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1})
+    .addTo(leafletMap)
+    .bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">Your destination</p>');
+
+  // ── Live location: blue dot + accuracy ring (iOS Maps style) ──
+  let userDotLayer=null;
+  let userAccuracyLayer=null;
+
+  leafletMap.on('locationfound', e=>{
+    // Remove previous
+    if(userDotLayer) leafletMap.removeLayer(userDotLayer);
+    if(userAccuracyLayer) leafletMap.removeLayer(userAccuracyLayer);
+
+    // Accuracy circle (light blue ring)
+    userAccuracyLayer=L.circle(e.latlng,{
+      radius:e.accuracy/2,
+      color:'#4F6EF7',
+      fillColor:'#4F6EF7',
+      fillOpacity:0.10,
+      weight:1,
+      opacity:0.4
+    }).addTo(leafletMap);
+
+    // Blue dot (pulsing)
+    const dotIcon=L.divIcon({
+      className:'',
+      html:`<div style="width:20px;height:20px;position:relative;display:flex;align-items:center;justify-content:center">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(79,110,247,0.25);position:absolute;animation:pulse 2s infinite"></div>
+        <div style="width:14px;height:14px;border-radius:50%;background:#4F6EF7;border:2.5px solid white;box-shadow:0 2px 6px rgba(79,110,247,0.5);position:relative;z-index:1"></div>
+      </div>`,
+      iconSize:[20,20],iconAnchor:[10,10]
+    });
+    userDotLayer=L.marker(e.latlng,{icon:dotIcon,zIndexOffset:1000})
+      .addTo(leafletMap)
+      .bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">You are here</p>');
+  });
+
+  leafletMap.on('locationerror', ()=>{
+    // Silently fail — user denied or unavailable
+    console.log('Location unavailable');
+  });
+
   setTimeout(()=>leafletMap.invalidateSize(),100);
 }
 
