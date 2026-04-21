@@ -941,7 +941,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
 <!-- ══════════ BOTTOM SHEET PICKER ══════════ -->
 <div id="picker-backdrop" onclick="closePicker()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;border-radius:42px"></div>
-<div id="picker-sheet" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--surface-card);border-radius:24px 24px 0 0;z-index:201;max-height:72%;flex-direction:column;overflow:hidden">
+<div id="picker-sheet" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--surface-card);border-radius:24px 24px 0 0;z-index:201;max-height:78%;flex-direction:column;overflow:hidden">
   <div style="padding:10px 0 0;display:flex;justify-content:center;flex-shrink:0">
     <div style="width:36px;height:4px;background:var(--divider);border-radius:2px"></div>
   </div>
@@ -955,7 +955,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <input type="text" id="picker-search" placeholder="Search..." oninput="filterPicker(this.value)" style="font-size:14px">
     </div>
   </div>
-  <div id="picker-list" style="overflow-y:auto;flex:1"></div>
+  <div id="picker-list" style="overflow-y:auto;flex:1;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)"></div>
 </div>
 
 <!-- ══════════ BOTTOM NAV ══════════ -->
