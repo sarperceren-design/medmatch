@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>MedMatch</title>
 <!-- PWA: full screen when launched from iPhone home screen -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -91,7 +91,11 @@ button{cursor:pointer;touch-action:manipulation}
 }
 
 *{transition:background-color .3s,color .3s,border-color .3s}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:#c8ccd4;display:flex;align-items:center;justify-content:center;min-height:100vh}
+
+/* iOS Safari: inputs under 16px trigger auto-zoom on focus. Force minimum 16px globally. */
+input,select,textarea{font-size:16px !important}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:#c8ccd4;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh}
 .device{width:390px;height:844px;background:#111;border-radius:50px;padding:8px;box-shadow:0 40px 100px rgba(0,0,0,0.5),inset 0 0 0 1.5px #444;flex-shrink:0}
 .screen{width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--surface-page);display:flex;flex-direction:column;position:relative}
 .page{display:none;flex-direction:column;flex:1;min-height:0;position:relative}
@@ -251,13 +255,32 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 /* Allergy chips */
 .allergy-chip{background:var(--color-purple-tint);color:var(--on-purple-tint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid var(--color-purple-light);display:flex;align-items:center;gap:6px}
 
-/* On a real mobile device — hide the prototype frame and fill the screen */
-@media (max-width: 500px) {
-  body { background: var(--surface-page); align-items: flex-start; overflow-x: hidden; }
-  html { overflow-x: hidden; }
-  .device { width: 100vw; max-width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; background: transparent; overflow: hidden; }
-  .screen { border-radius: 0; height: 100dvh; overflow: hidden; }
-  /* Hide the fake status bar — real iOS shows its own */
+/* On a real mobile or tablet — hide the prototype frame and fill the screen */
+@media (max-width: 1024px) {
+  body { background: var(--surface-page); align-items: flex-start; justify-content: flex-start; overflow-x: hidden; min-height: 100dvh; }
+  html { overflow-x: hidden; height: 100%; }
+  .device {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    background: var(--surface-page);
+    overflow: hidden;
+    /* Respect iPhone notch and home indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .screen {
+    border-radius: 0;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  /* Hide the fake iOS status bar — the real device shows its own */
   .device > .screen > div:first-child { display: none !important; }
 }
 
@@ -405,6 +428,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
     <!-- First-time empty state / recent searches -->
     <div id="s-recent">
+      <h3 id="recent-title" style="display:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin:4px 0 12px">Your recent searches</h3>
       <div id="recent-list" style="display:flex;flex-direction:column;gap:10px"></div>
       <!-- shown only when no recents -->
       <div id="s-empty-state" style="display:none;padding:40px 0;text-align:center">
@@ -594,13 +618,15 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         <div id="d-warnings" style="padding:16px;display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
-      <!-- Verified Source -->
+      <!-- Data source (honest attribution — Phase 1) -->
       <div class="srcbox">
-        <div>
-          <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:2px">Verified Source</p>
-          <p id="d-source" style="font-size:12px;color:var(--text-secondary)"></p>
+        <div style="flex:1;min-width:0">
+          <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:2px">Data source</p>
+          <p id="d-source" style="font-size:12px;color:var(--text-secondary);word-break:break-word"></p>
         </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <button id="d-source-info" aria-label="About this data source" style="background:transparent;border:none;cursor:pointer;padding:6px;margin:-6px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex-shrink:0" onclick="currentDetailMed&&showSourceInfo(currentDetailMed)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
       </div>
 
       <!-- Find nearby pharmacies -->
@@ -1281,10 +1307,14 @@ function renderRecents(){
     list.innerHTML='';
     const empty=document.getElementById('s-empty-state');
     if(empty) empty.style.display='block';
+    const title=document.getElementById('recent-title');
+    if(title) title.style.display='none';
     return;
   }
   const empty=document.getElementById('s-empty-state');
   if(empty) empty.style.display='none';
+  const title=document.getElementById('recent-title');
+  if(title) title.style.display='block';
   list.innerHTML=recents.map((r,i)=>`
     <div class="swipe-row" id="sr-${i}">
       <div class="swipe-bg-left">${BM_ICO}<span>Save</span></div>
@@ -1891,9 +1921,79 @@ function showSearchError(){
   }
 }
 
+// ── Data provenance (Phase 1: honest attribution) ─────────────
+// Every medication displays its actual source. We never claim openFDA for non-US
+// records. Current state of data coverage, by country_code:
+//   US  → some records may ultimately come from openFDA (public domain). Until
+//         a real openFDA pipeline is wired in, records are treated as curated.
+//   All → manually curated seed data. Not yet verified against primary regulator.
+// This function returns the truthful source attribution. When real data pipelines
+// land (Phase 3), medications will carry a `source_name` + `source_url` field
+// populated at import time, and this function will prefer those over the defaults.
+function medSourceInfo(med){
+  // Prefer fields stored on the record itself once the data pipeline is live
+  if(med&&med.source_name){
+    return {
+      name: med.source_name,
+      url: med.source_url||null,
+      verified: !!med.source_url,
+      short: med.source_name
+    };
+  }
+  // Fallback: honest default based on country_code for seed data
+  const cc=(med&&med.country_code)||'';
+  if(cc==='US'){
+    return {
+      name: 'MedMatch curated — awaiting openFDA sync',
+      url: null,
+      verified: false,
+      short: 'MedMatch curated'
+    };
+  }
+  return {
+    name: 'MedMatch curated — awaiting regulator sync',
+    url: null,
+    verified: false,
+    short: 'MedMatch curated'
+  };
+}
+
+// Opens a disclosure sheet explaining exactly where this medication's data came
+// from and its current verification status. Used when the user taps the info
+// icon next to the source label.
+//
+// Three states worth distinguishing honestly:
+//   1. verified + URL   → record comes from regulator, user can tap to see the
+//                          original regulator page (US/EU/CA launch state)
+//   2. verified, no URL → record is attributed to a real regulator, but that
+//                          regulator doesn't publish per-drug deep-linkable
+//                          pages. Example: Turkey's TİTCK. Honest disclosure:
+//                          data is from TİTCK, but no source page to show.
+//   3. no attribution    → seed/curated record that hasn't been verified yet.
+function showSourceInfo(med){
+  const info=medSourceInfo(med);
+  // State 1: we have a source URL — regulator is verifiable
+  if(info.verified){
+    alert(`Source: ${info.name}\n\nThis medication's record is sourced from a regulatory authority. Tap "View source" to see the original record.`);
+    return;
+  }
+  // State 2: we have a source name but no URL — regulator attributed, not deep-linkable
+  // TİTCK (Turkey) doesn't publish per-drug pages, so we're honest about it
+  if(med&&med.source_name){
+    alert(`Source: ${info.name}\n\nThis medication is licensed by ${info.name}, which does not publish a public per-drug page we can link to. Record details come from official licensing data. Always confirm with a local pharmacist before purchasing.`);
+    return;
+  }
+  // State 3: no regulator attribution yet — seed data
+  alert(`Source: ${info.name}\n\nThis medication was manually added to our database while we build live integrations with openFDA (US), Health Canada (CA), EMA (EU) and TİTCK (TR). It has not yet been verified against the primary regulator. Always confirm with a local pharmacist before purchasing.`);
+}
+
 function scoreMatch(med, query){
   // Perfect INN match = 100, brand match = 90, partial = 75
-  const q=query.toLowerCase();
+  // IMPORTANT: always resolve brand names to their INN first, so scoring is consistent
+  // whether the caller passes "advil" or "ibuprofen". Without this, the same medication
+  // can score 100% when typed and 75% when tapped from recent searches — a serious
+  // trust/safety issue in a healthcare context.
+  const q=resolveSearchTerm(query);
   if(med.inn===q) return 100;
   if(med.brand_name.toLowerCase()===q) return 100;
   if(med.inn.startsWith(q)||med.brand_name.toLowerCase().startsWith(q)) return 90;
@@ -1971,7 +2071,9 @@ function goToLiveDetail(i){
   if(!med) return;
   currentDetailMed=med;
 
-  // Save the full search term to recents when user actually taps a result
+  // Save the user's search query (not the tapped medication) so they can re-run the same
+  // search later. Example: user searches "Advil", taps "Nurofen" — we save "Advil" so they
+  // can find Advil's equivalents again without remembering the foreign brand name.
   const inp=document.getElementById('sinput');
   const term=inp?.value?.trim();
   if(term&&!recents.includes(term)){recents.unshift(term);if(recents.length>5)recents.pop();}
@@ -1990,14 +2092,27 @@ function goToLiveDetail(i){
     :{bg:'var(--color-coral-tint)',c:'var(--on-coral-tint)'};
   badge.style.background=sc.bg; matchEl.style.color=sc.c;
   document.getElementById('d-active').innerHTML=`<p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Active ingredient</p><span class="tag-blue">${med.inn}</span>`;
-  document.getElementById('d-shared').innerHTML='<span style="font-size:11px;color:var(--text-secondary)">Data from OpenFDA</span>';
+  const srcInfo=medSourceInfo(med);
+  document.getElementById('d-shared').innerHTML=`<span style="font-size:11px;color:var(--text-secondary)">Source: ${srcInfo.short}</span>`;
   document.getElementById('d-unique').innerHTML='';
   document.getElementById('d-ulabel').textContent='';
   document.getElementById('d-usage').textContent=med.form?`Form: ${med.form}. Always follow pharmacist instructions.`:'Follow pharmacist instructions.';
-  document.getElementById('d-source').textContent='OpenFDA — US National Drug Database';
+  document.getElementById('d-source').textContent=srcInfo.name;
   const warnings=Array.isArray(med.warnings)&&med.warnings.length?med.warnings:['Always verify with a local pharmacist before purchasing.'];
   document.getElementById('d-warnings').innerHTML=warnings.slice(0,3).map(w=>`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px">${typeof w==='string'?w.slice(0,120)+'…':w}</p></div>`).join('');
-  document.getElementById('d-benefits').innerHTML=`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal-dark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg><p style="font-size:13px">Verified by OpenFDA drug label database</p></div>`;
+  // Honest "benefits" line — three states, matching showSourceInfo()
+  // 1. Verified + URL: "Record verified against [regulator]"  (US/EU/CA launch state)
+  // 2. Has source_name, no URL: regulator attributed but no deep-link (Turkey)
+  // 3. No attribution: pure seed data, pending regulator sync
+  let benefitsLine;
+  if(srcInfo.verified){
+    benefitsLine=`Record verified against ${srcInfo.short}`;
+  } else if(med&&med.source_name){
+    benefitsLine=`Licensed by ${srcInfo.short}`;
+  } else {
+    benefitsLine=`Record pending verification against primary regulator`;
+  }
+  document.getElementById('d-benefits').innerHTML=`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-teal-dark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg><p style="font-size:13px">${benefitsLine}</p></div>`;
   goTo('detail');
   // Sync detail bookmark button state
   setTimeout(()=>updateDetailBm(saved.has(med.brand_name)),0);
@@ -2124,8 +2239,8 @@ async function selectMedLive(inn, brandName){
     const seeAllBtn=document.querySelector('#s-ai-preview button.btn');
     if(seeAllBtn) seeAllBtn.onclick=()=>{renderLiveResults(unique,inn);navHistory=['search'];goTo('results',true);};
 
-    // Add to recents
-    if(!recents.includes(brandName)){recents.unshift(brandName);if(recents.length>5)recents.pop();}
+    // Note: don't add to recents here — that fires while user is still typing.
+    // Recents are only saved when the user actually commits to a result (see goToLiveDetail).
 
   } else {
     // No results
