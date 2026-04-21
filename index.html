@@ -101,8 +101,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .page{display:none;flex-direction:column;flex:1;min-height:0;position:relative}
 .page.active{display:flex;flex-direction:column}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.scroll::-webkit-scrollbar{width:3px}
-.scroll::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.3);border-radius:2px}
 
 /* Nav */
 .bnav{background:var(--surface-nav);border-top:1px solid var(--divider);display:flex;flex-shrink:0;padding:6px 0 14px}
@@ -158,6 +156,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .inp-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-disabled);pointer-events:none}
 input[type=text]{width:100%;padding:14px 14px 14px 44px;background:var(--surface-input);border:1.5px solid transparent;border-radius:16px;font-size:15px;color:var(--text-primary);outline:none}
 input[type=text]:focus{border-color:#4F6EF7}
+.inp-wrap input[type=text]{padding-right:40px}
+.inp-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;padding:2px;cursor:pointer;color:var(--text-disabled);display:flex;align-items:center;z-index:1}
+.inp-clear svg{position:static !important;left:auto !important;transform:none !important}
+.scroll::-webkit-scrollbar,#picker-list::-webkit-scrollbar,#ph-card-list::-webkit-scrollbar,.clist::-webkit-scrollbar{width:4px}
+.scroll::-webkit-scrollbar-track,#picker-list::-webkit-scrollbar-track,#ph-card-list::-webkit-scrollbar-track,.clist::-webkit-scrollbar-track{background:transparent}
+.scroll::-webkit-scrollbar-thumb,#picker-list::-webkit-scrollbar-thumb,#ph-card-list::-webkit-scrollbar-thumb,.clist::-webkit-scrollbar-thumb{background:var(--divider);border-radius:2px}
+.scroll,#picker-list,#ph-card-list,.clist{scrollbar-width:thin;scrollbar-color:var(--divider) transparent}
 .card{background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
 
 /* Tags & dots */
@@ -337,7 +342,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       </button>
       <div class="cdrop" id="cdrop">
         <div style="padding:10px;border-bottom:1px solid var(--divider)">
-          <div class="inp-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="csearch" placeholder="Search countries..." oninput="filterC(this.value)" style="font-size:14px"></div>
+          <div class="inp-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="csearch" placeholder="Search countries..." oninput="filterC(this.value)" style="font-size:14px"><button class="inp-clear" onclick="document.getElementById('csearch').value='';filterC('')" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         </div>
         <div class="clist" id="clist"></div>
       </div>
@@ -357,7 +362,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       </button>
       <div class="cdrop" id="cdrop2">
         <div style="padding:10px;border-bottom:1px solid var(--divider)">
-          <div class="inp-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="csearch2" placeholder="Search countries..." oninput="filterC2(this.value)" style="font-size:14px"></div>
+          <div class="inp-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="csearch2" placeholder="Search countries..." oninput="filterC2(this.value)" style="font-size:14px"><button class="inp-clear" onclick="document.getElementById('csearch2').value='';filterC2('')" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
         </div>
         <div class="clist" id="clist2"></div>
       </div>
@@ -385,6 +390,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <div class="inp-wrap" style="margin-bottom:10px">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="sinput" placeholder="Search for your medication" oninput="handleSearch(this.value)">
+      <button class="inp-clear" onclick="document.getElementById('sinput').value='';handleSearch('')" aria-label="Clear search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <button class="scan">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -734,7 +740,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         <input type="file" accept="image/*" style="display:none" onchange="updatePhoto(this)">
       </label>
       </div>
-      <p style="font-size:17px;font-weight:700;color:var(--text-primary)">Cara Sarper</p>
+      <p id="profile-display-name" style="font-size:17px;font-weight:700;color:var(--text-primary)">Cara Sarper</p>
       <p style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Vancouver, BC</p>
     </div>
 
@@ -953,6 +959,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <div class="inp-wrap">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="picker-search" placeholder="Search..." oninput="filterPicker(this.value)" style="font-size:14px">
+      <button class="inp-clear" onclick="document.getElementById('picker-search').value='';filterPicker('')" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
   </div>
   <div id="picker-list" style="overflow-y:auto;flex:1;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)"></div>
@@ -1973,8 +1980,10 @@ function medSourceInfo(med){
 function showSourceInfo(med){
   const info=medSourceInfo(med);
   // State 1: we have a source URL — regulator is verifiable
-  if(info.verified){
-    alert(`Source: ${info.name}\n\nThis medication's record is sourced from a regulatory authority. Tap "View source" to see the original record.`);
+  if(info.verified && info.url){
+    if(confirm(`Source: ${info.name}\n\nThis medication's record is sourced from a regulatory authority.\n\nTap OK to open the source record.`)){
+      window.open(info.url,'_blank');
+    }
     return;
   }
   // State 2: we have a source name but no URL — regulator attributed, not deep-linkable
@@ -2916,6 +2925,12 @@ function toggleCardEdit(card){
       if(editing){i.value=v.textContent.trim();v.style.display='none';i.style.display='block';}
       else{if(i.value.trim())v.textContent=i.value.trim();v.style.display='';i.style.display='none';}
     });
+    if(!editing){
+      const first=document.getElementById('hd-v-first').textContent.trim();
+      const last=document.getElementById('hd-v-last').textContent.trim();
+      const pn=document.getElementById('profile-display-name');
+      if(pn)pn.textContent=[first,last].filter(Boolean).join(' ');
+    }
     const vB=document.getElementById('hd-v-blood'),iB=document.getElementById('hd-i-blood');
     if(editing){iB.value=vB.textContent.trim();vB.style.display='none';iB.style.display='block';}
     else{vB.textContent=iB.value;vB.style.display='';iB.style.display='none';}
