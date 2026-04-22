@@ -985,6 +985,17 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   </button>
 </div>
 
+<!-- ══════════ DISCLAIMER MODAL ══════════ -->
+<div id="disclaimer-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
+  <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
+    <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
+    <h2 style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:12px">Medical Disclaimer</h2>
+    <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px">MedMatch provides medication information <strong style="color:var(--text-primary)">for reference only</strong>. It is not a medical device and does not diagnose or treat any medical condition.</p>
+    <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:24px">Always consult a <strong style="color:var(--text-primary)">pharmacist or doctor</strong> before taking any medication, especially when travelling.</p>
+    <button onclick="acceptDisclaimer()" style="width:100%;padding:15px;background:var(--color-purple);border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">I Understand</button>
+  </div>
+</div>
+
 </div><!-- .screen -->
 </div><!-- .device -->
 
@@ -1428,7 +1439,8 @@ function renderSaved(){
         <span style="font-size:13px;color:${lv.col};font-weight:600">${lv.label}</span>
       </div>
       <h3 style="margin-bottom:4px">${m.name}</h3>
-      <p style="font-size:13px;color:var(--text-secondary)">${m.mfr} · ${m.active[0]}</p>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px">${m.mfr} · ${m.active[0]}</p>
+      <p style="font-size:11px;color:var(--text-disabled);padding-top:8px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
     </div>`;
   }).join('');
 }
@@ -2065,6 +2077,7 @@ function renderLiveResults(results, query){
       </div>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">${sub}</p>
       <div class="${safetyClass}"><p class="nt">${safetyTxt}</p></div>
+      <p style="font-size:11px;color:var(--text-disabled);margin-top:10px;padding-top:8px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
     </div>`;
   }).join('');
 
@@ -2180,6 +2193,7 @@ async function handleSearch(v){
               <span class="dot ${level.dot}"></span>
               <span style="font-size:12px;font-weight:600;color:${level.col}">${level.label}</span>
             </div>
+            <p style="font-size:11px;color:var(--text-disabled);margin-top:8px;padding-top:6px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
           </div>`;
         }).join('');
         sl.style.display='flex';
@@ -2240,6 +2254,7 @@ async function selectMedLive(inn, brandName){
           </div>
           <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">${med.manufacturer||'Unknown'} · ${med.inn}</p>
           <div class="${safetyClass}" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">${safetyText(med,score)}</p></div>
+          <p style="font-size:11px;color:var(--text-disabled);margin-top:8px;padding-top:6px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
         </div>`;
       }).join('');
     }
@@ -3082,6 +3097,17 @@ function updatePhoto(input){
 renderClist();
 renderClist2();
 renderRecents();
+
+function acceptDisclaimer(){
+  localStorage.setItem('mm_disclaimer','1');
+  document.getElementById('disclaimer-modal').style.display='none';
+}
+(function(){
+  if(!localStorage.getItem('mm_disclaimer')){
+    const m=document.getElementById('disclaimer-modal');
+    if(m) m.style.display='flex';
+  }
+})();
 </script>
 </body>
 </html>
