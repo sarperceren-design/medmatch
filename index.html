@@ -992,6 +992,19 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 </div>
 
 <!-- ══════════ DISCLAIMER MODAL ══════════ -->
+<div id="go-sheet" onclick="if(event.target===this)closeGoSheet()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
+  <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
+    <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
+    <h2 style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Get directions</h2>
+    <p id="go-sheet-name" style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:20px">Choose how to open this pharmacy.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="goOpen('apple')" style="width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Open in Apple Maps</button>
+      <button onclick="goOpen('google')" style="width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Open in Google Maps</button>
+      <button onclick="closeGoSheet()" style="width:100%;padding:15px;background:var(--surface-input);border:none;border-radius:16px;font-size:15px;font-weight:700;color:var(--text-primary);cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="scan-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
   <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
     <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
@@ -2412,24 +2425,40 @@ function pharmacyPhone(p){
   const s=String(seed).padStart(7,'0');
   return `+1-555-${s.slice(0,3)}-${s.slice(3)}`;
 }
+let goSheetTarget=null;
 function openPharmacyInMaps(lat,lng,name){
+  goSheetTarget={lat,lng,name:name||''};
+  const label=document.getElementById('go-sheet-name');
+  if(label) label.textContent=name?`Choose how to open ${name}.`:'Choose how to open this pharmacy.';
+  const sheet=document.getElementById('go-sheet');
+  if(sheet) sheet.style.display='flex';
+}
+function closeGoSheet(){
+  const sheet=document.getElementById('go-sheet');
+  if(sheet) sheet.style.display='none';
+  goSheetTarget=null;
+}
+function goOpen(provider){
+  if(!goSheetTarget) return closeGoSheet();
+  const {lat,lng,name}=goSheetTarget;
   const q=encodeURIComponent(name||`${lat},${lng}`);
-  const isApple=/iPad|iPhone|iPod|Mac/.test(navigator.userAgent) && !window.MSStream;
-  const url=isApple
+  const url=provider==='apple'
     ? `https://maps.apple.com/?q=${q}&ll=${lat},${lng}`
     : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  closeGoSheet();
   window.open(url,'_blank','noopener');
 }
 function callPharmacyNumber(phone){
   window.location.href='tel:'+phone.replace(/[^+\d]/g,'');
 }
 let phListExpanded=false;
+let phLastRendered=[];
 function expandPharmacyList(){
   phListExpanded=true;
-  const q=document.getElementById('ph-search-input')?.value||'';
-  filterPharmacies(q);
+  renderPharmacyList(phLastRendered);
 }
 function renderPharmacyList(pharmacies){
+  phLastRendered=pharmacies||[];
   const list=document.getElementById('ph-card-list');
   if(!list) return;
   const GO_ICO=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
