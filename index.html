@@ -2562,10 +2562,16 @@ function handlePharmSearch(v){
   // First try filtering the currently active pharmacy base by name
   const base=getActivePharmacyBase();
   const nameMatches=base.filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
+  // In location mode the search is ALWAYS a name filter over nearby pharmacies —
+  // never geocode. A neighbourhood name like "Kadikoy" shouldn't fly the map to
+  // a different city when we already know where the user is.
+  if(userLocation){
+    nameMatches.sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
+    updatePharmacyListLabel();
+    renderPharmacyList(nameMatches);
+    return;
+  }
   if(nameMatches.length>0){
-    if(userLocation){
-      nameMatches.sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
-    }
     updatePharmacyListLabel();
     renderPharmacyList(nameMatches);
     return;
@@ -2680,18 +2686,18 @@ async function geocodeCity(query){
 function flyToCity(lat, lng, zoom, pharmacies, locationName){
   if(!leafletMap) return;
   leafletMap.flyTo([lat,lng], zoom||14, {animate:true,duration:1.2});
-  // Clear old markers and add new ones
+  // Clear existing pharmacy markers (tracked set) plus any stray search-centre pin.
+  pharmacyMarkers.forEach(m=>{ try{ leafletMap.removeLayer(m); }catch{} });
+  pharmacyMarkers=[];
   leafletMap.eachLayer(layer=>{
-    if(layer instanceof L.Marker||layer instanceof L.CircleMarker) leafletMap.removeLayer(layer);
+    if(layer instanceof L.CircleMarker) leafletMap.removeLayer(layer);
   });
-  function makeIcon(color){
-    return L.divIcon({className:'',html:`<div style="width:34px;height:34px;background:${color};border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg></div>`,iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]});
-  }
   const pharmsToShow=pharmacies||(DEST_MAP[selC]||DEST_MAP['United States']).pharmacies;
+  const icon=makePharmacyIcon();
   pharmsToShow.forEach(p=>{
-    const icon=makeIcon(p.open?'#16A34A':'#9CA3AF');
-    const popup=`<div style="font-family:-apple-system,sans-serif;min-width:140px"><p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:${p.open?'#16A34A':'#6B7280'};margin:0 0 2px;font-weight:600">${p.hours}</p><p style="font-size:11px;color:#6B7280;margin:0">${p.dist} away</p></div>`;
-    L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(popup);
+    if(typeof p.lat!=='number'||typeof p.lng!=='number') return;
+    const marker=L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(buildPharmacyPopup(p));
+    pharmacyMarkers.push(marker);
   });
   L.circleMarker([lat,lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1}).addTo(leafletMap).bindPopup(`<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">${locationName||'Searched location'}</p>`);
   renderPharmacyList(pharmsToShow);
@@ -3023,6 +3029,52 @@ const DEST_MAP={
 };
 var leafletMap=null; // global so inline onclick handlers can access it
 var userLocation=null; // live user coords once geolocation resolves
+var pharmacyMarkers=[]; // current pharmacy map markers (managed by syncMapMarkers)
+
+function makePharmacyIcon(){
+  // Blue pill-cross marker matching the app's primary brand blue.
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:38px;height:38px;background:#4F6EF7;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>
+    </div>`,
+    iconSize:[38,38], iconAnchor:[19,19], popupAnchor:[0,-22]
+  });
+}
+function buildPharmacyPopup(p){
+  const phone=pharmacyPhone(p);
+  const safeName=(p.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const openColor=p.open?'#16A34A':'#6B7280';
+  const openText=p.open?p.hours:`Closed · ${p.hours}`;
+  return `<div style="font-family:-apple-system,sans-serif;min-width:200px">
+    <p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name||''}</p>
+    <p style="font-size:12px;color:${openColor};margin:0 0 2px;font-weight:600">${openText}</p>
+    <p style="font-size:11px;color:#6B7280;margin:0 0 10px">${p.dist||''} away</p>
+    <div style="display:flex;gap:6px">
+      <button onclick="openPharmacyInMaps(${p.lat},${p.lng},'${safeName}')" style="flex:1;background:#4F6EF7;border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Go
+      </button>
+      <button onclick="callPharmacyNumber('${phone}')" style="flex:1;background:#E5E7EB;border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:#111827;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>Call
+      </button>
+    </div>
+  </div>`;
+}
+function syncMapMarkers(){
+  if(!leafletMap) return;
+  pharmacyMarkers.forEach(m=>{ try{ leafletMap.removeLayer(m); }catch{} });
+  pharmacyMarkers=[];
+  const base=getActivePharmacyBase();
+  const list=userLocation
+    ? [...base].sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist))).slice(0,20)
+    : base;
+  const icon=makePharmacyIcon();
+  list.forEach(p=>{
+    if(typeof p.lat!=='number'||typeof p.lng!=='number') return;
+    const marker=L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(buildPharmacyPopup(p));
+    pharmacyMarkers.push(marker);
+  });
+}
 
 function haversineKm(lat1,lng1,lat2,lng2){
   const R=6371, toRad=x=>x*Math.PI/180;
@@ -3071,19 +3123,7 @@ function initLeafletMap(){
   leafletMap=L.map('leaflet-map',{zoomControl:false,attributionControl:false}).setView([dest.lat,dest.lng],dest.zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafletMap);
 
-  function makeIcon(color){
-    return L.divIcon({
-      className:'',
-      html:`<div style="width:34px;height:34px;background:${color};border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg></div>`,
-      iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]
-    });
-  }
-
-  dest.pharmacies.forEach(p=>{
-    const icon=makeIcon(p.open?'#16A34A':'#9CA3AF');
-    const popup=`<div style="font-family:-apple-system,sans-serif;min-width:140px"><p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:${p.open?'#16A34A':'#6B7280'};margin:0 0 2px;font-weight:600">${p.hours}</p><p style="font-size:11px;color:#6B7280;margin:0">${p.dist} away</p></div>`;
-    L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(popup);
-  });
+  syncMapMarkers();
 
   L.circleMarker([dest.lat,dest.lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1})
     .addTo(leafletMap)
@@ -3104,6 +3144,8 @@ function initLeafletMap(){
     phListExpanded=false;
     const q=document.getElementById('ph-search-input')?.value||'';
     filterPharmacies(q);
+    // Replace pharmacy markers with the nearby set
+    syncMapMarkers();
     // Remove previous
     if(userDotLayer) leafletMap.removeLayer(userDotLayer);
     if(userAccuracyLayer) leafletMap.removeLayer(userAccuracyLayer);
@@ -3141,6 +3183,7 @@ function initLeafletMap(){
     else if(code===3){ msg='Finding your location took too long.'; hint='Try again, or move somewhere with a better signal.'; }
     userLocation=null;
     updatePharmacyListLabel();
+    syncMapMarkers();
     showLocationError(msg, hint);
   });
 
@@ -3275,27 +3318,13 @@ function selectPickerItem(val,flag){
     Object.keys(searchCache).forEach(k=>delete searchCache[k]);
     // Refresh pharmacy cards immediately
     renderPharmacyCards();
-    // Re-centre and re-marker the map if it's already loaded
+    // Re-centre and re-marker the map if it's already loaded.
+    // In location mode syncMapMarkers still pulls the nearby global set —
+    // destination change doesn't disturb the user's actual-location view.
     if(leafletMap){
       const dest=DEST_MAP[selC]||DEST_MAP['United States'];
-      leafletMap.setView([dest.lat,dest.lng],dest.zoom);
-      // Remove old markers and re-add for new country
-      leafletMap.eachLayer(layer=>{
-        if(layer instanceof L.Marker||layer instanceof L.CircleMarker) leafletMap.removeLayer(layer);
-      });
-      function makeIcon(color){
-        return L.divIcon({
-          className:'',
-          html:`<div style="width:34px;height:34px;background:${color};border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg></div>`,
-          iconSize:[34,34],iconAnchor:[17,17],popupAnchor:[0,-20]
-        });
-      }
-      dest.pharmacies.forEach(p=>{
-        const icon=makeIcon(p.open?'#16A34A':'#9CA3AF');
-        const popup=`<div style="font-family:-apple-system,sans-serif;min-width:140px"><p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name}</p><p style="font-size:12px;color:${p.open?'#16A34A':'#6B7280'};margin:0 0 2px;font-weight:600">${p.hours}</p><p style="font-size:11px;color:#6B7280;margin:0">${p.dist} away</p></div>`;
-        L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(popup);
-      });
-      L.circleMarker([dest.lat,dest.lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1}).addTo(leafletMap).bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">Your destination</p>');
+      if(!userLocation) leafletMap.setView([dest.lat,dest.lng],dest.zoom);
+      syncMapMarkers();
       setTimeout(()=>leafletMap.invalidateSize(),100);
     }
   } else if(pickerTarget==='home'){
