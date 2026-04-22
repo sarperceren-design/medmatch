@@ -1553,19 +1553,20 @@ function goTo(p, skipHistory){
         leafletMap.invalidateSize();
         const dest=DEST_MAP[selC]||DEST_MAP['United States'];
         leafletMap.setView([dest.lat,dest.lng],dest.zoom);
+        autoLocateOnPharmacies();
       },100);
     } else if(window.L){
-      setTimeout(()=>initLeafletMap(),50);
+      setTimeout(()=>{ initLeafletMap(); autoLocateOnPharmacies(); },50);
     } else {
       const existing=document.getElementById('leaflet-js');
       if(!existing){
         const s=document.createElement('script');
         s.id='leaflet-js';
         s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-        s.onload=()=>initLeafletMap();
+        s.onload=()=>{ initLeafletMap(); autoLocateOnPharmacies(); };
         document.head.appendChild(s);
       } else {
-        setTimeout(()=>initLeafletMap(),50);
+        setTimeout(()=>{ initLeafletMap(); autoLocateOnPharmacies(); },50);
       }
     }
   }
@@ -2983,6 +2984,41 @@ const DEST_MAP={
   ]},
 };
 var leafletMap=null; // global so inline onclick handlers can access it
+var userLocation=null; // live user coords once geolocation resolves
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371, toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function formatKm(km){
+  if(km<1) return `${Math.max(1,Math.round(km*1000))} m`;
+  return `${km.toFixed(km<10?1:0)} km`;
+}
+function recomputePharmacyDistances(){
+  if(!userLocation || !phLastRendered || !phLastRendered.length) return;
+  phLastRendered.forEach(p=>{
+    if(typeof p.lat==='number' && typeof p.lng==='number'){
+      const km=haversineKm(userLocation.lat,userLocation.lng,p.lat,p.lng);
+      p._km=km;
+      p.dist=formatKm(km);
+    }
+  });
+  phLastRendered.sort((a,b)=>(a._km||parseFloat(a.dist))-(b._km||parseFloat(b.dist)));
+  renderPharmacyList(phLastRendered);
+}
+function autoLocateOnPharmacies(){
+  if(!leafletMap) return;
+  if(!('geolocation' in navigator)){
+    showLocationError("Location isn't supported on this device.", "You can still search pharmacies by city name using the search bar above.");
+    return;
+  }
+  // Leaflet wraps navigator.geolocation.getCurrentPosition and fires
+  // 'locationfound' / 'locationerror' on the map. iOS Safari surfaces its
+  // native permission prompt at this point.
+  try { leafletMap.locate({setView:true, maxZoom:16, enableHighAccuracy:true, timeout:10000}); } catch {}
+}
 
 function initLeafletMap(){
   const el=document.getElementById('leaflet-map');
@@ -3020,6 +3056,13 @@ function initLeafletMap(){
   let userAccuracyLayer=null;
 
   leafletMap.on('locationfound', e=>{
+    // Store live coords for distance calculations
+    userLocation={lat:e.latlng.lat, lng:e.latlng.lng};
+    // Dismiss any previously shown location error toast
+    const existingToast=document.getElementById('loc-error-toast');
+    if(existingToast) existingToast.remove();
+    // Re-sort the currently rendered pharmacy list by real distance and re-render
+    recomputePharmacyDistances();
     // Remove previous
     if(userDotLayer) leafletMap.removeLayer(userDotLayer);
     if(userAccuracyLayer) leafletMap.removeLayer(userAccuracyLayer);
