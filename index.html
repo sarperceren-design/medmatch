@@ -962,7 +962,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <button class="inp-clear" onclick="document.getElementById('picker-search').value='';filterPicker('')" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
   </div>
-  <div id="picker-list" style="overflow-y:auto;flex:1;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)"></div>
+  <div id="picker-list" class="picker-list" style="overflow-y:auto;flex:1;min-height:0;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)"></div>
 </div>
 
 <!-- ══════════ BOTTOM NAV ══════════ -->
@@ -989,7 +989,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 </div><!-- .device -->
 
 <script>
-const COUNTRIES=[{n:'Argentina',f:'🇦🇷'},{n:'Australia',f:'🇦🇺'},{n:'Austria',f:'🇦🇹'},{n:'Belgium',f:'🇧🇪'},{n:'Brazil',f:'🇧🇷'},{n:'Canada',f:'🇨🇦'},{n:'China',f:'🇨🇳'},{n:'Denmark',f:'🇩🇰'},{n:'Finland',f:'🇫🇮'},{n:'France',f:'🇫🇷'},{n:'Germany',f:'🇩🇪'},{n:'Greece',f:'🇬🇷'},{n:'India',f:'🇮🇳'},{n:'Italy',f:'🇮🇹'},{n:'Japan',f:'🇯🇵'},{n:'Mexico',f:'🇲🇽'},{n:'Netherlands',f:'🇳🇱'},{n:'New Zealand',f:'🇳🇿'},{n:'Norway',f:'🇳🇴'},{n:'Poland',f:'🇵🇱'},{n:'Portugal',f:'🇵🇹'},{n:'Singapore',f:'🇸🇬'},{n:'South Korea',f:'🇰🇷'},{n:'Spain',f:'🇪🇸'},{n:'Sweden',f:'🇸🇪'},{n:'Switzerland',f:'🇨🇭'},{n:'Thailand',f:'🇹🇭'},{n:'Turkey',f:'🇹🇷'},{n:'United Kingdom',f:'🇬🇧'},{n:'United States',f:'🇺🇸'}];
+const COUNTRIES=[{n:'Argentina',f:'🇦🇷'},{n:'Australia',f:'🇦🇺'},{n:'Austria',f:'🇦🇹'},{n:'Belgium',f:'🇧🇪'},{n:'Brazil',f:'🇧🇷'},{n:'Canada',f:'🇨🇦'},{n:'Chile',f:'🇨🇱'},{n:'China',f:'🇨🇳'},{n:'Colombia',f:'🇨🇴'},{n:'Croatia',f:'🇭🇷'},{n:'Czech Republic',f:'🇨🇿'},{n:'Denmark',f:'🇩🇰'},{n:'Egypt',f:'🇪🇬'},{n:'Finland',f:'🇫🇮'},{n:'France',f:'🇫🇷'},{n:'Germany',f:'🇩🇪'},{n:'Greece',f:'🇬🇷'},{n:'Hungary',f:'🇭🇺'},{n:'India',f:'🇮🇳'},{n:'Indonesia',f:'🇮🇩'},{n:'Israel',f:'🇮🇱'},{n:'Italy',f:'🇮🇹'},{n:'Japan',f:'🇯🇵'},{n:'Jordan',f:'🇯🇴'},{n:'Lebanon',f:'🇱🇧'},{n:'Malaysia',f:'🇲🇾'},{n:'Mexico',f:'🇲🇽'},{n:'Morocco',f:'🇲🇦'},{n:'Netherlands',f:'🇳🇱'},{n:'New Zealand',f:'🇳🇿'},{n:'Nigeria',f:'🇳🇬'},{n:'Norway',f:'🇳🇴'},{n:'Peru',f:'🇵🇪'},{n:'Philippines',f:'🇵🇭'},{n:'Poland',f:'🇵🇱'},{n:'Portugal',f:'🇵🇹'},{n:'Romania',f:'🇷🇴'},{n:'Saudi Arabia',f:'🇸🇦'},{n:'Singapore',f:'🇸🇬'},{n:'South Africa',f:'🇿🇦'},{n:'South Korea',f:'🇰🇷'},{n:'Spain',f:'🇪🇸'},{n:'Sweden',f:'🇸🇪'},{n:'Switzerland',f:'🇨🇭'},{n:'Thailand',f:'🇹🇭'},{n:'Turkey',f:'🇹🇷'},{n:'United Arab Emirates',f:'🇦🇪'},{n:'United Kingdom',f:'🇬🇧'},{n:'United States',f:'🇺🇸'},{n:'Vietnam',f:'🇻🇳'}];
 
 const DB={
   1:{name:'Neobrufen',match:100,level:'safe',mfr:'Zambon Group',active:['Ibuprofen 400mg'],shared:['Microcrystalline cellulose'],unique:['Croscarmellose sodium','Magnesium stearate'],source:'Spanish Agency for Medicines (AEMPS)',usage:'Take 1 tablet every 6-8 hours with food. Swallow whole with water. Do not exceed 3 tablets (1200mg) in 24 hours.',benefits:['Exact same strength (400mg)','Most prescribed ibuprofen brand in Spain','Same pain relief and anti-inflammatory effects'],warnings:['Do not take on empty stomach','Avoid if you have stomach ulcers or kidney problems','Not recommended during last trimester of pregnancy']},
