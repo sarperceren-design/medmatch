@@ -695,6 +695,9 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <button id="ph-f-nearest" onclick="phFilter('nearest')" class="ph-chip">Nearest ↓</button>
     </div>
 
+    <!-- Context label — "near your location" or "in [destination country]" -->
+    <p id="ph-list-label" style="padding:4px 16px 6px;font-size:12px;color:var(--text-secondary);margin:0">Showing pharmacies in United States</p>
+
     <!-- Pharmacy list — rendered dynamically by renderPharmacyCards() -->
     <div style="overflow-y:auto;flex:1;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px" id="ph-card-list">
     </div>
@@ -2406,17 +2409,49 @@ function phFilter(f){
   filterPharmacies(q);
 }
 
-function filterPharmacies(q){
+function updatePharmacyListLabel(){
+  const el=document.getElementById('ph-list-label');
+  if(!el) return;
+  if(userLocation){
+    el.textContent='Showing pharmacies near your location';
+  } else {
+    el.textContent=`Showing pharmacies in ${selC||'United States'}`;
+  }
+}
+function getActivePharmacyBase(){
+  // When live location is available, pull pharmacies from every known country/city
+  // and compute real distances from the user. The selected destination country is
+  // ignored — the user wants what's actually nearby.
+  if(userLocation){
+    const out=[];
+    Object.values(DEST_MAP).forEach(d=>d.pharmacies.forEach(p=>out.push({...p})));
+    Object.values(CITY_MAP).forEach(c=>c.pharmacies.forEach(p=>out.push({...p})));
+    out.forEach(p=>{
+      if(typeof p.lat==='number' && typeof p.lng==='number'){
+        const km=haversineKm(userLocation.lat,userLocation.lng,p.lat,p.lng);
+        p._km=km;
+        p.dist=formatKm(km);
+      }
+    });
+    return out;
+  }
   const key=selC||'United States';
   const dest=DEST_MAP[key]||DEST_MAP['United States'];
+  return dest.pharmacies;
+}
+function filterPharmacies(q){
+  const base=getActivePharmacyBase();
   const activeFilter=document.querySelector('.ph-chip-on')?.id||'';
-  let pharmacies=dest.pharmacies.filter(p=>{
+  let pharmacies=base.filter(p=>{
     if(q && !p.name.toLowerCase().includes(q.toLowerCase())) return false;
     if(activeFilter==='ph-f-open') return p.open;
     if(activeFilter==='ph-f-24h') return p.hours==='Open 24 hours';
     return true;
   });
-  if(activeFilter==='ph-f-nearest') pharmacies=[...pharmacies].sort((a,b)=>parseFloat(a.dist)-parseFloat(b.dist));
+  if(activeFilter==='ph-f-nearest' || userLocation){
+    pharmacies=[...pharmacies].sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
+  }
+  updatePharmacyListLabel();
   renderPharmacyList(pharmacies);
 }
 
@@ -2524,11 +2559,14 @@ function handlePharmSearch(v){
     filterPharmacies('');
     return;
   }
-  // First try filtering current pharmacy names
-  const key=selC||'United States';
-  const dest=DEST_MAP[key]||DEST_MAP['United States'];
-  const nameMatches=dest.pharmacies.filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
+  // First try filtering the currently active pharmacy base by name
+  const base=getActivePharmacyBase();
+  const nameMatches=base.filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
   if(nameMatches.length>0){
+    if(userLocation){
+      nameMatches.sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
+    }
+    updatePharmacyListLabel();
     renderPharmacyList(nameMatches);
     return;
   }
@@ -3061,8 +3099,11 @@ function initLeafletMap(){
     // Dismiss any previously shown location error toast
     const existingToast=document.getElementById('loc-error-toast');
     if(existingToast) existingToast.remove();
-    // Re-sort the currently rendered pharmacy list by real distance and re-render
-    recomputePharmacyDistances();
+    // Re-filter from the location-based global pharmacy base (ignores destination).
+    // Respects any text currently in the pharmacy search box.
+    phListExpanded=false;
+    const q=document.getElementById('ph-search-input')?.value||'';
+    filterPharmacies(q);
     // Remove previous
     if(userDotLayer) leafletMap.removeLayer(userDotLayer);
     if(userAccuracyLayer) leafletMap.removeLayer(userAccuracyLayer);
@@ -3098,6 +3139,8 @@ function initLeafletMap(){
     if(code===1){ msg="Location permission was blocked."; hint='Allow location access in your browser settings to see pharmacies near you.'; }
     else if(code===2){ msg="Your location isn't available right now."; hint='Check your connection or GPS signal and try again.'; }
     else if(code===3){ msg='Finding your location took too long.'; hint='Try again, or move somewhere with a better signal.'; }
+    userLocation=null;
+    updatePharmacyListLabel();
     showLocationError(msg, hint);
   });
 
