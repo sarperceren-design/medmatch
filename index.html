@@ -2535,19 +2535,35 @@ let pharmSearchTimer=null;
 function handlePharmSearch(v){
   phListExpanded=false;
   if(!v.trim()){
+    // Clearing the search in location mode restores the original live-location
+    // set that was fetched when the tab first opened (or was last located), so
+    // a previous neighbourhood geocode doesn't leave us stranded on Kadikoy.
+    if(userLocation && nearbyPharmacyCache.length){
+      fetchedPharmacies=nearbyPharmacyCache.slice();
+      if(mapboxMap) mapboxMap.flyTo({center:[userLocation.lng, userLocation.lat], zoom:14, essential:true});
+      updatePharmacyListLabel();
+      filterPharmacies('');
+      syncMapMarkers();
+      return;
+    }
     filterPharmacies('');
     return;
   }
   // First try filtering the currently active pharmacy base by name
   const base=getActivePharmacyBase();
   const nameMatches=base.filter(p=>p.name.toLowerCase().includes(v.toLowerCase()));
-  // In location mode the search is ALWAYS a name filter over nearby pharmacies —
-  // never geocode. A neighbourhood name like "Kadikoy" shouldn't fly the map to
-  // a different city when we already know where the user is.
   if(userLocation){
-    nameMatches.sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
-    updatePharmacyListLabel();
-    renderPharmacyList(nameMatches);
+    // Location mode: if any pharmacy name matches, filter in place (keeps the
+    // user on their actual location). If nothing matches, treat the query as a
+    // neighbourhood/district name and geocode — Kadikoy, Caddebostan, etc.
+    if(nameMatches.length>0){
+      nameMatches.sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist)));
+      updatePharmacyListLabel();
+      renderPharmacyList(nameMatches);
+      return;
+    }
+    clearTimeout(pharmSearchTimer);
+    pharmSearchTimer=setTimeout(()=>geocodeCity(v), 600);
     return;
   }
   if(nameMatches.length>0){
@@ -2985,6 +3001,7 @@ var userLocation=null; // live user coords once geolocation resolves
 var mapboxPharmacyMarkers=[]; // managed by syncMapMarkers
 var userMarker=null;
 var fetchedPharmacies=[]; // cache of live Mapbox Places results for the current proximity
+var nearbyPharmacyCache=[]; // snapshot of live-location results, restored when search clears
 var activePopup=null;
 
 function loadMapboxGL(cb){
@@ -3146,6 +3163,9 @@ function autoLocateOnPharmacies(){
       renderUserMarker(userLocation.lat, userLocation.lng);
       mapboxMap.flyTo({center:[userLocation.lng, userLocation.lat], zoom:14, essential:true});
       await refreshPharmacies(userLocation.lng, userLocation.lat);
+      // Snapshot the live-location results so a cleared search can restore them
+      // without refetching when the user cancels a neighbourhood search.
+      nearbyPharmacyCache=fetchedPharmacies.slice();
     },
     err=>{
       let msg="We couldn't get your location.";
