@@ -392,7 +392,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <input type="text" id="sinput" placeholder="Search for your medication" oninput="handleSearch(this.value)">
       <button class="inp-clear" onclick="document.getElementById('sinput').value='';handleSearch('')" aria-label="Clear search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <button class="scan">
+    <button class="scan" onclick="startScan()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       Scan packaging or prescription
     </button>
@@ -986,6 +986,33 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 </div>
 
 <!-- ══════════ DISCLAIMER MODAL ══════════ -->
+<div id="scan-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
+  <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
+    <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2 id="scan-title" style="font-size:17px;font-weight:700;color:var(--text-primary);margin:0">Scan medication</h2>
+      <button onclick="stopScan()" aria-label="Close" style="background:none;border:none;padding:4px;cursor:pointer;color:var(--text-disabled);display:flex;align-items:center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p id="scan-hint" style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:14px">Point your camera at the barcode or the brand name on the packaging.</p>
+    <div id="scan-stage" style="position:relative;width:100%;aspect-ratio:4/3;background:#000;border-radius:16px;overflow:hidden;margin-bottom:14px">
+      <video id="scan-video" playsinline autoplay muted style="width:100%;height:100%;object-fit:cover;display:block"></video>
+      <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+        <div style="width:72%;aspect-ratio:3/1;border:2px dashed #A0AEFF;border-radius:14px;background:rgba(238,240,255,0.10)"></div>
+      </div>
+    </div>
+    <div id="scan-unsupported" style="display:none;background:var(--color-purple-tint);border:1px solid var(--color-purple-light);border-radius:16px;padding:14px 16px;margin-bottom:14px;gap:12px;align-items:flex-start">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="flex:1">
+        <p style="font-size:14px;font-weight:700;color:var(--on-purple-tint);margin:0 0 2px">Scanning isn't supported on this device</p>
+        <p id="scan-unsupported-reason" style="font-size:12px;color:var(--on-purple-tint);opacity:.85;line-height:1.5;margin:0">Your browser doesn't support barcode scanning. Try typing the medication name instead.</p>
+      </div>
+    </div>
+    <button id="scan-cta" onclick="stopScan(true)" style="width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Type it instead</button>
+  </div>
+</div>
+
 <div id="disclaimer-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
   <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
     <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
@@ -2345,6 +2372,23 @@ function filterPharmacies(q){
   renderPharmacyList(pharmacies);
 }
 
+function pharmacyPhone(p){
+  // Deterministic demo number seeded from lat/lng — tel: link opens the dialer.
+  const seed=Math.abs(Math.round((p.lat+p.lng)*100000))%10000000;
+  const s=String(seed).padStart(7,'0');
+  return `+1-555-${s.slice(0,3)}-${s.slice(3)}`;
+}
+function openPharmacyInMaps(lat,lng,name){
+  const q=encodeURIComponent(name||`${lat},${lng}`);
+  const isApple=/iPad|iPhone|iPod|Mac/.test(navigator.userAgent) && !window.MSStream;
+  const url=isApple
+    ? `https://maps.apple.com/?q=${q}&ll=${lat},${lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  window.open(url,'_blank','noopener');
+}
+function callPharmacyNumber(phone){
+  window.location.href='tel:'+phone.replace(/[^+\d]/g,'');
+}
 function renderPharmacyList(pharmacies){
   const list=document.getElementById('ph-card-list');
   if(!list) return;
@@ -2361,6 +2405,8 @@ function renderPharmacyList(pharmacies){
     const stockBadge=i<2?`<span style="background:var(--color-teal-tint);color:var(--on-teal-tint);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px">Stocks this med</span>`:'';
     const openColor=p.open?'#16A34A':'#9CA3AF';
     const openText=p.open?p.hours:`Closed · ${p.hours}`;
+    const phone=pharmacyPhone(p);
+    const safeName=(p.name||'').replace(/'/g,"\\'");
     return `<div class="ph-card-v2">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="width:46px;height:46px;background:var(--color-teal-tint);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--color-teal-light)">${PLUS_ICO}</div>
@@ -2375,8 +2421,8 @@ function renderPharmacyList(pharmacies){
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-          <button onclick="event.stopPropagation()" style="background:#4F6EF7;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:white;cursor:pointer;display:flex;align-items:center;gap:4px">${GO_ICO}Go</button>
-          <button onclick="event.stopPropagation()" style="background:var(--surface-input);border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:4px">${CALL_ICO}Call</button>
+          <button onclick="event.stopPropagation();openPharmacyInMaps(${p.lat},${p.lng},'${safeName}')" style="background:#4F6EF7;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:white;cursor:pointer;display:flex;align-items:center;gap:4px">${GO_ICO}Go</button>
+          <button onclick="event.stopPropagation();callPharmacyNumber('${phone}')" style="background:var(--surface-input);border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:4px">${CALL_ICO}Call</button>
         </div>
       </div>
     </div>`;
@@ -2921,9 +2967,14 @@ function initLeafletMap(){
       .bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">You are here</p>');
   });
 
-  leafletMap.on('locationerror', ()=>{
-    // Silently fail — user denied or unavailable
-    console.log('Location unavailable');
+  leafletMap.on('locationerror', (e)=>{
+    const code=e&&e.code;
+    let msg="We couldn't get your location.";
+    let hint='Make sure location services are on, then try again.';
+    if(code===1){ msg="Location permission was blocked."; hint='Allow location access in your browser settings to see pharmacies near you.'; }
+    else if(code===2){ msg="Your location isn't available right now."; hint='Check your connection or GPS signal and try again.'; }
+    else if(code===3){ msg='Finding your location took too long.'; hint='Try again, or move somewhere with a better signal.'; }
+    showLocationError(msg, hint);
   });
 
   setTimeout(()=>leafletMap.invalidateSize(),100);
@@ -3099,9 +3150,290 @@ function updatePhoto(input){
   reader.readAsDataURL(input.files[0]);
 }
 
+// ── First-time profile empty state ───────────────────────────────
+const PROFILE_STORAGE_KEY='mm_profile_v1';
+const PROFILE_EMPTY_MARK='Not set';
+function loadSavedProfile(){
+  try { return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null'); } catch { return null; }
+}
+function saveCurrentProfile(){
+  const data={
+    first:getVal('hd-v-first'), last:getVal('hd-v-last'),
+    dob:getVal('hd-v-dob'), sex:getVal('hd-v-sex'),
+    blood:getVal('hd-v-blood'), wheelchair:getVal('hd-v-wheelchair'),
+    ecName:getVal('ec-v-name'), ecRel:getVal('ec-v-rel'), ecPhone:getVal('ec-v-phone'),
+    midId:getVal('mid-v-id'),
+    allergies:[...document.querySelectorAll('#allergy-chips .allergy-chip')].map(c=>c.childNodes[0]?.textContent.trim()).filter(Boolean),
+    photo:(document.getElementById('profile-photo')||{}).src||''
+  };
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
+}
+function getVal(id){const el=document.getElementById(id);if(!el)return '';const t=(el.textContent||'').trim();return t===PROFILE_EMPTY_MARK?'':t;}
+function setEmptyField(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=PROFILE_EMPTY_MARK;
+  el.style.color='var(--text-disabled)';
+  el.style.fontStyle='italic';
+  el.style.fontWeight='400';
+}
+function clearProfileToEmpty(){
+  ['hd-v-first','hd-v-last','hd-v-dob','hd-v-sex','ec-v-name','ec-v-rel','ec-v-phone','mid-v-id'].forEach(setEmptyField);
+  ['hd-i-first','hd-i-last','hd-i-dob','hd-i-sex','ec-i-name','ec-i-rel','ec-i-phone','mid-i-id'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const vB=document.getElementById('hd-v-blood');
+  if(vB){vB.textContent=PROFILE_EMPTY_MARK;vB.style.background='var(--surface-input)';vB.style.color='var(--text-disabled)';vB.style.fontStyle='italic';}
+  const vW=document.getElementById('hd-v-wheelchair');
+  if(vW){vW.textContent=PROFILE_EMPTY_MARK;vW.style.background='var(--surface-input)';vW.style.color='var(--text-disabled)';vW.style.fontStyle='italic';}
+  const pn=document.getElementById('profile-display-name');
+  if(pn){pn.textContent='Your name';pn.style.color='var(--text-disabled)';pn.style.fontStyle='italic';}
+  const loc=document.querySelector('#page-profile .scroll p[style*="Vancouver"]');
+  if(loc){loc.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Add your location';loc.style.color='var(--text-disabled)';loc.style.fontStyle='italic';}
+  const photo=document.getElementById('profile-photo');
+  if(photo){
+    photo.removeAttribute('src');
+    photo.style.display='none';
+    const wrap=photo.parentElement;
+    if(wrap && !wrap.querySelector('.profile-photo-placeholder')){
+      const ph=document.createElement('div');
+      ph.className='profile-photo-placeholder';
+      ph.style.cssText='width:100%;height:100%;background:var(--surface-input);display:flex;align-items:center;justify-content:center;color:var(--text-disabled)';
+      ph.innerHTML='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+      wrap.appendChild(ph);
+    }
+  }
+  const chipsWrap=document.getElementById('allergy-chips');
+  if(chipsWrap){
+    [...chipsWrap.querySelectorAll('.allergy-chip')].forEach(c=>c.remove());
+  }
+  const verified=document.querySelector('#page-profile p[style*="Verified by MedMatch"]');
+  if(verified) verified.closest('div').style.display='none';
+}
+function applySavedProfile(saved){
+  const setField=(id,val)=>{const el=document.getElementById(id);if(!el)return;if(val){el.textContent=val;el.style.color='';el.style.fontStyle='';el.style.fontWeight='';}else{setEmptyField(id);}};
+  setField('hd-v-first',saved.first);setField('hd-v-last',saved.last);
+  setField('hd-v-dob',saved.dob);setField('hd-v-sex',saved.sex);
+  setField('ec-v-name',saved.ecName);setField('ec-v-rel',saved.ecRel);setField('ec-v-phone',saved.ecPhone);
+  setField('mid-v-id',saved.midId);
+  const vB=document.getElementById('hd-v-blood');
+  if(vB && saved.blood){vB.textContent=saved.blood;vB.style.background='var(--color-coral-tint)';vB.style.color='var(--on-coral-tint)';vB.style.fontStyle='';}
+  const vW=document.getElementById('hd-v-wheelchair');
+  if(vW && saved.wheelchair){vW.textContent=saved.wheelchair;vW.style.background=saved.wheelchair==='Yes'?'var(--color-teal-tint)':'var(--surface-input)';vW.style.color=saved.wheelchair==='Yes'?'var(--on-teal-tint)':'var(--text-secondary)';vW.style.fontStyle='';}
+  const name=[saved.first,saved.last].filter(Boolean).join(' ');
+  const pn=document.getElementById('profile-display-name');
+  if(pn && name){pn.textContent=name;pn.style.color='';pn.style.fontStyle='';}
+  if(saved.photo){
+    const photo=document.getElementById('profile-photo');
+    if(photo){photo.src=saved.photo;photo.style.display='';}
+    const ph=document.querySelector('.profile-photo-placeholder');
+    if(ph) ph.remove();
+  }
+  if(Array.isArray(saved.allergies) && saved.allergies.length){
+    const input=document.getElementById('allergy-input');
+    saved.allergies.forEach(a=>{if(input){input.value=a;addAllergy();}});
+  }
+  updateProfileInviteVisibility();
+}
+function updateProfileInviteVisibility(){
+  const banner=document.getElementById('profile-invite');
+  if(!banner) return;
+  const first=getVal('hd-v-first'), last=getVal('hd-v-last');
+  const hasName=!!(first||last);
+  banner.style.display=hasName?'none':'flex';
+}
+function insertProfileInvite(){
+  const scroll=document.querySelector('#page-profile .scroll');
+  if(!scroll || document.getElementById('profile-invite')) return;
+  const banner=document.createElement('div');
+  banner.id='profile-invite';
+  banner.style.cssText='background:var(--color-purple-tint);border:1px solid var(--color-purple-light);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start';
+  banner.innerHTML=`
+    <div style="width:32px;height:32px;background:var(--surface-card);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <div style="flex:1">
+      <p style="font-size:14px;font-weight:700;color:var(--on-purple-tint);margin:0 0 2px">Complete your profile</p>
+      <p style="font-size:12px;color:var(--on-purple-tint);opacity:.85;line-height:1.4;margin:0">Add your health details, allergies, and emergency contact so MedMatch can personalise safety warnings.</p>
+    </div>`;
+  scroll.insertBefore(banner, scroll.firstElementChild);
+}
+function initProfile(){
+  insertProfileInvite();
+  const saved=loadSavedProfile();
+  if(saved){
+    clearProfileToEmpty();
+    applySavedProfile(saved);
+  } else {
+    clearProfileToEmpty();
+    updateProfileInviteVisibility();
+  }
+  const origToggle=window.toggleCardEdit;
+  if(typeof origToggle==='function'){
+    window.toggleCardEdit=function(card){
+      const entering=!cardState[card];
+      if(entering){
+        document.querySelectorAll('#page-profile .prof-val').forEach(el=>{
+          if((el.textContent||'').trim()===PROFILE_EMPTY_MARK) el.textContent='';
+        });
+        const vB=document.getElementById('hd-v-blood');
+        if(vB && vB.textContent.trim()===PROFILE_EMPTY_MARK) vB.textContent='B+';
+        const vW=document.getElementById('hd-v-wheelchair');
+        if(vW && vW.textContent.trim()===PROFILE_EMPTY_MARK) vW.textContent='No';
+      }
+      origToggle(card);
+      if(!cardState[card]){
+        ['hd-v-first','hd-v-last','hd-v-dob','hd-v-sex','ec-v-name','ec-v-rel','ec-v-phone','mid-v-id'].forEach(id=>{
+          const el=document.getElementById(id);
+          if(el && !(el.textContent||'').trim()) setEmptyField(id);
+        });
+        saveCurrentProfile();
+        updateProfileInviteVisibility();
+      }
+    };
+  }
+  const origAdd=window.addAllergy, origRemove=window.removeAllergy;
+  if(typeof origAdd==='function') window.addAllergy=function(){origAdd.apply(this,arguments);saveCurrentProfile();};
+  if(typeof origRemove==='function') window.removeAllergy=function(btn){origRemove.call(this,btn);saveCurrentProfile();};
+  const origUpdatePhoto=window.updatePhoto;
+  if(typeof origUpdatePhoto==='function'){
+    window.updatePhoto=function(input){
+      if(!input.files||!input.files[0])return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const img=document.getElementById('profile-photo');
+        if(img){img.src=e.target.result;img.style.display='';}
+        const ph=document.querySelector('.profile-photo-placeholder');
+        if(ph) ph.remove();
+        saveCurrentProfile();
+      };
+      reader.readAsDataURL(input.files[0]);
+    };
+  }
+}
+
+// ── Medication scanner ──────────────────────────────
+let scanStream=null, scanDetector=null, scanRaf=null, scanActive=false;
+async function startScan(){
+  const modal=document.getElementById('scan-modal');
+  const stage=document.getElementById('scan-stage');
+  const video=document.getElementById('scan-video');
+  const unsupported=document.getElementById('scan-unsupported');
+  const reason=document.getElementById('scan-unsupported-reason');
+  const hint=document.getElementById('scan-hint');
+  modal.style.display='flex';
+  unsupported.style.display='none';
+  stage.style.display='block';
+  hint.textContent='Point your camera at the barcode or the brand name on the packaging.';
+  const hasCamera=!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  const hasDetector=typeof window.BarcodeDetector==='function';
+  if(!hasCamera){
+    return scanShowUnsupported('Camera access isn\'t available in this browser. Try typing the medication name below.');
+  }
+  if(!hasDetector){
+    return scanShowUnsupported('Your browser doesn\'t support barcode scanning. Try typing the medication name below.');
+  }
+  try {
+    scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  } catch(err){
+    const msg=(err && err.name==='NotAllowedError')
+      ? 'Camera permission was blocked. Allow camera access, or type the medication name below.'
+      : 'We couldn\'t start the camera on this device. Try typing the medication name below.';
+    return scanShowUnsupported(msg);
+  }
+  video.srcObject=scanStream;
+  try { await video.play(); } catch {}
+  try {
+    const formats=await window.BarcodeDetector.getSupportedFormats();
+    scanDetector=new window.BarcodeDetector({formats:formats.length?formats:['ean_13','ean_8','code_128','upc_a','upc_e','qr_code','data_matrix']});
+  } catch {
+    scanDetector=new window.BarcodeDetector();
+  }
+  scanActive=true;
+  scanLoop();
+}
+function scanShowUnsupported(message){
+  const stage=document.getElementById('scan-stage');
+  const unsupported=document.getElementById('scan-unsupported');
+  const reason=document.getElementById('scan-unsupported-reason');
+  stage.style.display='none';
+  unsupported.style.display='flex';
+  reason.textContent=message;
+}
+async function scanLoop(){
+  if(!scanActive) return;
+  const video=document.getElementById('scan-video');
+  try {
+    if(video.readyState>=2){
+      const results=await scanDetector.detect(video);
+      if(results && results.length){
+        const value=(results[0].rawValue||'').trim();
+        if(value){
+          stopScan(false);
+          applyScanResult(value);
+          return;
+        }
+      }
+    }
+  } catch {}
+  scanRaf=setTimeout(scanLoop, 250);
+}
+function stopScan(focusInput){
+  scanActive=false;
+  if(scanRaf){ clearTimeout(scanRaf); scanRaf=null; }
+  if(scanStream){
+    scanStream.getTracks().forEach(t=>t.stop());
+    scanStream=null;
+  }
+  const video=document.getElementById('scan-video');
+  if(video) video.srcObject=null;
+  const modal=document.getElementById('scan-modal');
+  if(modal) modal.style.display='none';
+  if(focusInput===true){
+    const inp=document.getElementById('sinput');
+    if(inp){ inp.focus(); }
+  }
+}
+function applyScanResult(raw){
+  const inp=document.getElementById('sinput');
+  if(!inp) return;
+  const query=scanResolveQuery(raw);
+  inp.value=query;
+  if(typeof handleSearch==='function') handleSearch(query);
+  else inp.dispatchEvent(new Event('input'));
+  inp.focus();
+}
+function scanResolveQuery(raw){
+  // If the decoded value is a pure barcode (only digits), surface the raw code —
+  // the existing search will look it up as-is. If it looks like text (a brand name
+  // printed on the packaging), feed that to search directly.
+  const v=(raw||'').trim();
+  return v;
+}
+
+function showLocationError(message, hint){
+  const page=document.getElementById('page-pharmacies');
+  if(!page) return;
+  let toast=document.getElementById('loc-error-toast');
+  if(!toast){
+    toast=document.createElement('div');
+    toast.id='loc-error-toast';
+    toast.style.cssText='position:absolute;top:64px;left:12px;right:68px;z-index:12;background:var(--surface-card);border:1px solid var(--color-coral-light);border-left:4px solid #EF4444;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.18);padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-family:inherit';
+    page.appendChild(toast);
+  }
+  toast.innerHTML=`
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="14" x2="12.01" y2="14"/></svg>
+    <div style="flex:1;min-width:0">
+      <p style="font-size:13px;font-weight:700;color:var(--text-primary);margin:0 0 2px">${message}</p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:0;line-height:1.4">${hint}</p>
+    </div>
+    <button onclick="document.getElementById('loc-error-toast').remove()" aria-label="Dismiss" style="background:none;border:none;cursor:pointer;color:var(--text-disabled);padding:0;flex-shrink:0;display:flex;align-items:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>`;
+}
+
 renderClist();
 renderClist2();
 renderRecents();
+initProfile();
 
 function acceptDisclaimer(){
   localStorage.setItem('mm_disclaimer','1');
