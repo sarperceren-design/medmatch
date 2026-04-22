@@ -197,6 +197,9 @@ input[type=text]:focus{border-color:#4F6EF7}
 .bm{position:absolute;top:14px;right:14px;width:36px;height:36px;background:var(--surface-card);border:1px solid var(--border-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
 .bm.on svg{stroke:#4F6EF7;fill:#4F6EF7}
 .scan{width:100%;margin-top:10px;padding:14px;border:2px dashed #A0AEFF;background:#EEF0FF;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:#4F6EF7;font-size:14px;font-weight:500;cursor:pointer}
+.mapboxgl-popup-content{background:var(--surface-card);color:var(--text-primary);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.22);padding:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.mapboxgl-popup-tip{border-top-color:var(--surface-card)!important;border-bottom-color:var(--surface-card)!important;border-left-color:var(--surface-card)!important;border-right-color:var(--surface-card)!important}
+.mapboxgl-popup-close-button{color:var(--text-disabled);font-size:18px;padding:4px 8px}
 .sugg{width:100%;padding:14px;background:var(--surface-card);border:1px solid #C7CBFF;border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;text-align:left}
 .sugg-icon{width:40px;height:40px;background:#4F6EF7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sugg-icon.rec{background:#4F6EF7}
@@ -664,9 +667,9 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
   <!-- Floating map controls — top right, clearly in map area -->
   <div id="ph-map-controls" style="position:absolute;right:12px;top:64px;z-index:11;display:flex;flex-direction:column;gap:8px">
-    <button onclick="if(window.leafletMap)window.leafletMap.zoomIn()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">+</button>
-    <button onclick="if(window.leafletMap)window.leafletMap.zoomOut()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">−</button>
-    <button onclick="if(window.leafletMap)window.leafletMap.locate({setView:true,maxZoom:16})" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center">
+    <button onclick="if(window.mapboxMap)window.mapboxMap.zoomIn()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">+</button>
+    <button onclick="if(window.mapboxMap)window.mapboxMap.zoomOut()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--text-primary);line-height:1">−</button>
+    <button onclick="autoLocateOnPharmacies()" style="width:44px;height:44px;background:var(--surface-card);border:none;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;display:flex;align-items:center;justify-content:center">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
     </button>
   </div>
@@ -1547,30 +1550,21 @@ function goTo(p, skipHistory){
   nav.classList.toggle('hidden',p==='onboarding'||p==='tutorial');
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   const map={search:'ni-search',saved:'ni-saved',pharmacies:'ni-pharmacies',profile:'ni-profile',results:'ni-search',detail:'ni-search'};
-  // Auto-load Leaflet map when pharmacies page is shown
+  // Auto-load Mapbox GL JS when pharmacies page is shown
   if(p==='pharmacies'){
-    renderPharmacyCards();
-    if(leafletMap){
-      // Map already exists — just fix size (fixes "grey tiles" bug on mobile)
+    if(typeof updatePharmacyListLabel==='function') updatePharmacyListLabel();
+    if(typeof showPharmacyListLoading==='function' && !fetchedPharmacies.length){
+      showPharmacyListLoading('Finding pharmacies…');
+    }
+    if(mapboxMap){
       setTimeout(()=>{
-        leafletMap.invalidateSize();
-        const dest=DEST_MAP[selC]||DEST_MAP['United States'];
-        leafletMap.setView([dest.lat,dest.lng],dest.zoom);
+        mapboxMap.resize();
         autoLocateOnPharmacies();
       },100);
-    } else if(window.L){
-      setTimeout(()=>{ initLeafletMap(); autoLocateOnPharmacies(); },50);
+    } else if(window.mapboxgl){
+      setTimeout(()=>initMapboxMap(),50);
     } else {
-      const existing=document.getElementById('leaflet-js');
-      if(!existing){
-        const s=document.createElement('script');
-        s.id='leaflet-js';
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-        s.onload=()=>{ initLeafletMap(); autoLocateOnPharmacies(); };
-        document.head.appendChild(s);
-      } else {
-        setTimeout(()=>{ initLeafletMap(); autoLocateOnPharmacies(); },50);
-      }
+      loadMapboxGL(()=>initMapboxMap());
     }
   }
   if(map[p])document.getElementById(map[p]).classList.add('on');
@@ -2419,25 +2413,10 @@ function updatePharmacyListLabel(){
   }
 }
 function getActivePharmacyBase(){
-  // When live location is available, pull pharmacies from every known country/city
-  // and compute real distances from the user. The selected destination country is
-  // ignored — the user wants what's actually nearby.
-  if(userLocation){
-    const out=[];
-    Object.values(DEST_MAP).forEach(d=>d.pharmacies.forEach(p=>out.push({...p})));
-    Object.values(CITY_MAP).forEach(c=>c.pharmacies.forEach(p=>out.push({...p})));
-    out.forEach(p=>{
-      if(typeof p.lat==='number' && typeof p.lng==='number'){
-        const km=haversineKm(userLocation.lat,userLocation.lng,p.lat,p.lng);
-        p._km=km;
-        p.dist=formatKm(km);
-      }
-    });
-    return out;
-  }
-  const key=selC||'United States';
-  const dest=DEST_MAP[key]||DEST_MAP['United States'];
-  return dest.pharmacies;
+  // Live data from Mapbox Places. Already fetched with the right proximity
+  // (user location when granted, destination country otherwise) and already
+  // has per-pharmacy distance baked in by fetchPharmaciesNear.
+  return fetchedPharmacies.slice();
 }
 function filterPharmacies(q){
   const base=getActivePharmacyBase();
@@ -2653,54 +2632,26 @@ const CITY_MAP={
   ]},
 };
 
-// Geocode a city name using Nominatim, then fly the map there
+// Geocode a place name (city OR neighbourhood) using Mapbox, then fetch
+// live pharmacies near those coordinates and re-centre the map on them.
 async function geocodeCity(query){
-  const list=document.getElementById('ph-card-list');
-  if(list) list.innerHTML=`<div style="padding:16px;text-align:center;display:flex;align-items:center;gap:10px;justify-content:center"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite;flex-shrink:0"></span><span style="font-size:14px;color:var(--text-secondary)">Searching location...</span></div>`;
-
-  // Check our city map first (instant, no network)
-  const cityKey=query.toLowerCase().trim();
-  const cityMatch=Object.keys(CITY_MAP).find(k=>cityKey.includes(k)||k.includes(cityKey));
-  if(cityMatch){
-    const city=CITY_MAP[cityMatch];
-    flyToCity(city.lat, city.lng, city.zoom||14, city.pharmacies);
-    return;
-  }
-
-  // Fall back to Nominatim geocoding for any other city
+  showPharmacyListLoading('Searching location…');
   try{
-    const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,{headers:{'Accept-Language':'en'}});
+    const url=`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?limit=1&access_token=${encodeURIComponent(MAPBOX_TOKEN)}`;
+    const res=await fetch(url);
     const data=await res.json();
-    if(data&&data.length>0){
-      const {lat,lon,display_name}=data[0];
-      flyToCity(parseFloat(lat), parseFloat(lon), 14, null, display_name);
+    if(data && data.features && data.features.length>0){
+      const [lng,lat]=data.features[0].center;
+      if(mapboxMap) mapboxMap.flyTo({center:[lng,lat], zoom:13, essential:true});
+      await refreshPharmacies(lng, lat);
     } else {
-      if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">Location not found. Try a city name.</p></div>`;
+      const list=document.getElementById('ph-card-list');
+      if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">Location not found. Try a different name.</p></div>`;
     }
   }catch(e){
-    // Network blocked — show helpful message
-    if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px">Try: Vancouver, Montreal, Calgary</p><p style="font-size:13px;color:var(--text-secondary)">Or Munich, Lyon, Manchester</p></div>`;
+    const list=document.getElementById('ph-card-list');
+    if(list) list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">Could not search right now. Check your connection and try again.</p></div>`;
   }
-}
-
-function flyToCity(lat, lng, zoom, pharmacies, locationName){
-  if(!leafletMap) return;
-  leafletMap.flyTo([lat,lng], zoom||14, {animate:true,duration:1.2});
-  // Clear existing pharmacy markers (tracked set) plus any stray search-centre pin.
-  pharmacyMarkers.forEach(m=>{ try{ leafletMap.removeLayer(m); }catch{} });
-  pharmacyMarkers=[];
-  leafletMap.eachLayer(layer=>{
-    if(layer instanceof L.CircleMarker) leafletMap.removeLayer(layer);
-  });
-  const pharmsToShow=pharmacies||(DEST_MAP[selC]||DEST_MAP['United States']).pharmacies;
-  const icon=makePharmacyIcon();
-  pharmsToShow.forEach(p=>{
-    if(typeof p.lat!=='number'||typeof p.lng!=='number') return;
-    const marker=L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(buildPharmacyPopup(p));
-    pharmacyMarkers.push(marker);
-  });
-  L.circleMarker([lat,lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1}).addTo(leafletMap).bindPopup(`<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">${locationName||'Searched location'}</p>`);
-  renderPharmacyList(pharmsToShow);
 }
 
 // ── Bottom sheet — iOS-style snap with two positions ─────────────────────
@@ -2728,7 +2679,7 @@ function flyToCity(lat, lng, zoom, pharmacies, locationName){
     }
     sheet.style.height=h+'px';
     expanded=(h===EXPANDED);
-    setTimeout(()=>{ if(window.leafletMap) window.leafletMap.invalidateSize(); },400);
+    setTimeout(()=>{ if(window.mapboxMap) window.mapboxMap.resize(); },400);
   }
 
   function initSheetSwipe(){
@@ -3027,53 +2978,34 @@ const DEST_MAP={
     {lat:13.7515,lng:100.4967,name:'Medicare Pharmacy',dist:'2.3 km',open:false,hours:'Opens 09:00'},
   ]},
 };
-var leafletMap=null; // global so inline onclick handlers can access it
+// ═══════════ MAPBOX MAP ═══════════
+const MAPBOX_TOKEN='pk.eyJ1IjoibWVkbWF0Y2giLCJhIjoiY21vYWcwcDlsMDRxbDJxc2I2bWVqb3NxbiJ9.hyxAZFPk4-XyWsHzz6e1Eg';
+var mapboxMap=null; // global so inline onclick handlers can access it
 var userLocation=null; // live user coords once geolocation resolves
-var pharmacyMarkers=[]; // current pharmacy map markers (managed by syncMapMarkers)
+var mapboxPharmacyMarkers=[]; // managed by syncMapMarkers
+var userMarker=null;
+var fetchedPharmacies=[]; // cache of live Mapbox Places results for the current proximity
+var activePopup=null;
 
-function makePharmacyIcon(){
-  // Blue pill-cross marker matching the app's primary brand blue.
-  return L.divIcon({
-    className:'',
-    html:`<div style="width:38px;height:38px;background:#4F6EF7;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>
-    </div>`,
-    iconSize:[38,38], iconAnchor:[19,19], popupAnchor:[0,-22]
-  });
-}
-function buildPharmacyPopup(p){
-  const phone=pharmacyPhone(p);
-  const safeName=(p.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const openColor=p.open?'#16A34A':'#6B7280';
-  const openText=p.open?p.hours:`Closed · ${p.hours}`;
-  return `<div style="font-family:-apple-system,sans-serif;min-width:200px">
-    <p style="font-weight:700;font-size:13px;margin:0 0 4px">${p.name||''}</p>
-    <p style="font-size:12px;color:${openColor};margin:0 0 2px;font-weight:600">${openText}</p>
-    <p style="font-size:11px;color:#6B7280;margin:0 0 10px">${p.dist||''} away</p>
-    <div style="display:flex;gap:6px">
-      <button onclick="openPharmacyInMaps(${p.lat},${p.lng},'${safeName}')" style="flex:1;background:#4F6EF7;border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Go
-      </button>
-      <button onclick="callPharmacyNumber('${phone}')" style="flex:1;background:#E5E7EB;border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:#111827;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>Call
-      </button>
-    </div>
-  </div>`;
-}
-function syncMapMarkers(){
-  if(!leafletMap) return;
-  pharmacyMarkers.forEach(m=>{ try{ leafletMap.removeLayer(m); }catch{} });
-  pharmacyMarkers=[];
-  const base=getActivePharmacyBase();
-  const list=userLocation
-    ? [...base].sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist))).slice(0,20)
-    : base;
-  const icon=makePharmacyIcon();
-  list.forEach(p=>{
-    if(typeof p.lat!=='number'||typeof p.lng!=='number') return;
-    const marker=L.marker([p.lat,p.lng],{icon}).addTo(leafletMap).bindPopup(buildPharmacyPopup(p));
-    pharmacyMarkers.push(marker);
-  });
+function loadMapboxGL(cb){
+  if(window.mapboxgl){ cb && cb(); return; }
+  if(!document.getElementById('mapbox-css')){
+    const lnk=document.createElement('link');
+    lnk.id='mapbox-css';
+    lnk.rel='stylesheet';
+    lnk.href='https://api.mapbox.com/mapbox-gl-js/v3.9.1/mapbox-gl.css';
+    document.head.appendChild(lnk);
+  }
+  const existing=document.getElementById('mapbox-js');
+  if(existing){
+    existing.addEventListener('load', cb);
+    return;
+  }
+  const s=document.createElement('script');
+  s.id='mapbox-js';
+  s.src='https://api.mapbox.com/mapbox-gl-js/v3.9.1/mapbox-gl.js';
+  s.onload=cb;
+  document.head.appendChild(s);
 }
 
 function haversineKm(lat1,lng1,lat2,lng2){
@@ -3086,108 +3018,167 @@ function formatKm(km){
   if(km<1) return `${Math.max(1,Math.round(km*1000))} m`;
   return `${km.toFixed(km<10?1:0)} km`;
 }
-function recomputePharmacyDistances(){
-  if(!userLocation || !phLastRendered || !phLastRendered.length) return;
-  phLastRendered.forEach(p=>{
-    if(typeof p.lat==='number' && typeof p.lng==='number'){
-      const km=haversineKm(userLocation.lat,userLocation.lng,p.lat,p.lng);
-      p._km=km;
-      p.dist=formatKm(km);
-    }
-  });
-  phLastRendered.sort((a,b)=>(a._km||parseFloat(a.dist))-(b._km||parseFloat(b.dist)));
-  renderPharmacyList(phLastRendered);
+
+function makePharmacyMarkerEl(){
+  // Blue pill-cross marker matching the app's primary brand blue.
+  const el=document.createElement('div');
+  el.style.cssText='width:38px;height:38px;background:#4F6EF7;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;cursor:pointer';
+  el.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>';
+  return el;
 }
+function makeUserDotEl(){
+  const el=document.createElement('div');
+  el.style.cssText='width:20px;height:20px;position:relative;display:flex;align-items:center;justify-content:center';
+  el.innerHTML='<div style="width:20px;height:20px;border-radius:50%;background:rgba(79,110,247,0.25);position:absolute;animation:pulse 2s infinite"></div><div style="width:14px;height:14px;border-radius:50%;background:#4F6EF7;border:2.5px solid white;box-shadow:0 2px 6px rgba(79,110,247,0.5);position:relative;z-index:1"></div>';
+  return el;
+}
+function buildPharmacyPopup(p){
+  const phone=pharmacyPhone(p);
+  const safeName=(p.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const subline=p.address?`<p style="font-size:11px;color:var(--text-secondary);margin:0 0 8px">${p.address}</p>`:'';
+  return `<div style="min-width:200px">
+    <p style="font-weight:700;font-size:13px;margin:0 0 4px;color:var(--text-primary)">${p.name||''}</p>
+    <p style="font-size:12px;color:var(--text-secondary);margin:0 0 2px;font-weight:600">${p.dist||''} away</p>
+    ${subline}
+    <div style="display:flex;gap:6px">
+      <button onclick="openPharmacyInMaps(${p.lat},${p.lng},'${safeName}')" style="flex:1;background:#4F6EF7;border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Go
+      </button>
+      <button onclick="callPharmacyNumber('${phone}')" style="flex:1;background:var(--surface-input);border:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:600;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>Call
+      </button>
+    </div>
+  </div>`;
+}
+function syncMapMarkers(){
+  if(!mapboxMap) return;
+  mapboxPharmacyMarkers.forEach(m=>{ try{ m.remove(); }catch{} });
+  mapboxPharmacyMarkers=[];
+  const base=getActivePharmacyBase();
+  const list=userLocation
+    ? [...base].sort((a,b)=>(a._km!=null?a._km:parseFloat(a.dist))-(b._km!=null?b._km:parseFloat(b.dist))).slice(0,25)
+    : base;
+  list.forEach(p=>{
+    if(typeof p.lat!=='number' || typeof p.lng!=='number') return;
+    const popup=new mapboxgl.Popup({offset:22, closeButton:true, maxWidth:'240px'}).setHTML(buildPharmacyPopup(p));
+    const marker=new mapboxgl.Marker({element:makePharmacyMarkerEl(), anchor:'center'})
+      .setLngLat([p.lng, p.lat])
+      .setPopup(popup)
+      .addTo(mapboxMap);
+    mapboxPharmacyMarkers.push(marker);
+  });
+}
+function renderUserMarker(lat,lng){
+  if(!mapboxMap) return;
+  if(userMarker){ userMarker.remove(); userMarker=null; }
+  userMarker=new mapboxgl.Marker({element:makeUserDotEl(), anchor:'center'})
+    .setLngLat([lng, lat])
+    .addTo(mapboxMap);
+}
+
+async function fetchPharmaciesNear(lng, lat){
+  // Mapbox Search Box v1 category endpoint — returns POIs of category "pharmacy"
+  // nearest to the given proximity, globally. Works for any neighbourhood worldwide.
+  const url=`https://api.mapbox.com/search/searchbox/v1/category/pharmacy?proximity=${lng},${lat}&limit=25&access_token=${encodeURIComponent(MAPBOX_TOKEN)}`;
+  try {
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json();
+    const features=data.features||[];
+    const results=features.map(f=>{
+      const coords=(f.geometry&&f.geometry.coordinates)||[];
+      const plng=coords[0], plat=coords[1];
+      if(typeof plng!=='number' || typeof plat!=='number') return null;
+      const props=f.properties||{};
+      const name=props.name || props.name_preferred || 'Pharmacy';
+      const km=haversineKm(lat,lng,plat,plng);
+      return {
+        lat:plat, lng:plng, name,
+        open:true, hours:'Hours not available',
+        dist:formatKm(km), _km:km,
+        address:props.full_address || props.place_formatted || props.address || ''
+      };
+    }).filter(Boolean);
+    results.sort((a,b)=>a._km-b._km);
+    return results;
+  } catch(err){
+    console.warn('Pharmacy fetch failed:', err);
+    return [];
+  }
+}
+
+function showPharmacyListLoading(text){
+  const list=document.getElementById('ph-card-list');
+  if(list) list.innerHTML=`<div style="padding:16px;text-align:center;display:flex;align-items:center;gap:10px;justify-content:center"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite;flex-shrink:0"></span><span style="font-size:14px;color:var(--text-secondary)">${text||'Finding pharmacies...'}</span></div>`;
+}
+
+async function refreshPharmacies(lng, lat, options){
+  options=options||{};
+  showPharmacyListLoading(userLocation ? 'Finding pharmacies near you…' : 'Finding pharmacies…');
+  fetchedPharmacies=await fetchPharmaciesNear(lng, lat);
+  phListExpanded=false;
+  if(options.clearSearch){
+    const inp=document.getElementById('ph-search-input');
+    if(inp) inp.value='';
+  }
+  const q=document.getElementById('ph-search-input')?.value || '';
+  filterPharmacies(q);
+  syncMapMarkers();
+}
+
 function autoLocateOnPharmacies(){
-  if(!leafletMap) return;
+  if(!mapboxMap) return;
+  const destFallback=()=>{
+    const dest=DEST_MAP[selC]||DEST_MAP['United States'];
+    mapboxMap.flyTo({center:[dest.lng, dest.lat], zoom:dest.zoom||12, essential:true});
+    refreshPharmacies(dest.lng, dest.lat);
+  };
   if(!('geolocation' in navigator)){
     showLocationError("Location isn't supported on this device.", "You can still search pharmacies by city name using the search bar above.");
+    destFallback();
     return;
   }
-  // Leaflet wraps navigator.geolocation.getCurrentPosition and fires
-  // 'locationfound' / 'locationerror' on the map. iOS Safari surfaces its
-  // native permission prompt at this point.
-  try { leafletMap.locate({setView:true, maxZoom:16, enableHighAccuracy:true, timeout:10000}); } catch {}
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      userLocation={lat:pos.coords.latitude, lng:pos.coords.longitude};
+      const existingToast=document.getElementById('loc-error-toast');
+      if(existingToast) existingToast.remove();
+      renderUserMarker(userLocation.lat, userLocation.lng);
+      mapboxMap.flyTo({center:[userLocation.lng, userLocation.lat], zoom:14, essential:true});
+      await refreshPharmacies(userLocation.lng, userLocation.lat);
+    },
+    err=>{
+      let msg="We couldn't get your location.";
+      let hint='Make sure location services are on, then try again.';
+      if(err && err.code===1){ msg="Location permission was blocked."; hint='Allow location access in your browser settings to see pharmacies near you.'; }
+      else if(err && err.code===2){ msg="Your location isn't available right now."; hint='Check your connection or GPS signal and try again.'; }
+      else if(err && err.code===3){ msg='Finding your location took too long.'; hint='Try again, or move somewhere with a better signal.'; }
+      userLocation=null;
+      updatePharmacyListLabel();
+      showLocationError(msg, hint);
+      destFallback();
+    },
+    {enableHighAccuracy:true, timeout:10000, maximumAge:60000}
+  );
 }
 
-function initLeafletMap(){
+function initMapboxMap(){
   const el=document.getElementById('leaflet-map');
-  if(!el||leafletMap)return;
-  if(!document.getElementById('leaflet-css')){
-    const lnk=document.createElement('link');
-    lnk.id='leaflet-css';lnk.rel='stylesheet';
-    lnk.href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-    document.head.appendChild(lnk);
-  }
+  if(!el || mapboxMap) return;
+  if(!window.mapboxgl) return;
+  mapboxgl.accessToken=MAPBOX_TOKEN;
   const dest=DEST_MAP[selC]||DEST_MAP['United States'];
-  leafletMap=L.map('leaflet-map',{zoomControl:false,attributionControl:false}).setView([dest.lat,dest.lng],dest.zoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(leafletMap);
-
-  syncMapMarkers();
-
-  L.circleMarker([dest.lat,dest.lng],{radius:8,fillColor:'#4F6EF7',color:'white',weight:3,fillOpacity:1})
-    .addTo(leafletMap)
-    .bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">Your destination</p>');
-
-  // ── Live location: blue dot + accuracy ring (iOS Maps style) ──
-  let userDotLayer=null;
-  let userAccuracyLayer=null;
-
-  leafletMap.on('locationfound', e=>{
-    // Store live coords for distance calculations
-    userLocation={lat:e.latlng.lat, lng:e.latlng.lng};
-    // Dismiss any previously shown location error toast
-    const existingToast=document.getElementById('loc-error-toast');
-    if(existingToast) existingToast.remove();
-    // Re-filter from the location-based global pharmacy base (ignores destination).
-    // Respects any text currently in the pharmacy search box.
-    phListExpanded=false;
-    const q=document.getElementById('ph-search-input')?.value||'';
-    filterPharmacies(q);
-    // Replace pharmacy markers with the nearby set
-    syncMapMarkers();
-    // Remove previous
-    if(userDotLayer) leafletMap.removeLayer(userDotLayer);
-    if(userAccuracyLayer) leafletMap.removeLayer(userAccuracyLayer);
-
-    // Accuracy circle (light blue ring)
-    userAccuracyLayer=L.circle(e.latlng,{
-      radius:e.accuracy/2,
-      color:'#4F6EF7',
-      fillColor:'#4F6EF7',
-      fillOpacity:0.10,
-      weight:1,
-      opacity:0.4
-    }).addTo(leafletMap);
-
-    // Blue dot (pulsing)
-    const dotIcon=L.divIcon({
-      className:'',
-      html:`<div style="width:20px;height:20px;position:relative;display:flex;align-items:center;justify-content:center">
-        <div style="width:20px;height:20px;border-radius:50%;background:rgba(79,110,247,0.25);position:absolute;animation:pulse 2s infinite"></div>
-        <div style="width:14px;height:14px;border-radius:50%;background:#4F6EF7;border:2.5px solid white;box-shadow:0 2px 6px rgba(79,110,247,0.5);position:relative;z-index:1"></div>
-      </div>`,
-      iconSize:[20,20],iconAnchor:[10,10]
-    });
-    userDotLayer=L.marker(e.latlng,{icon:dotIcon,zIndexOffset:1000})
-      .addTo(leafletMap)
-      .bindPopup('<p style="font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;margin:0">You are here</p>');
+  mapboxMap=new mapboxgl.Map({
+    container:el,
+    style:'mapbox://styles/mapbox/streets-v12',
+    center:[dest.lng, dest.lat],
+    zoom:dest.zoom||12,
+    attributionControl:false
   });
-
-  leafletMap.on('locationerror', (e)=>{
-    const code=e&&e.code;
-    let msg="We couldn't get your location.";
-    let hint='Make sure location services are on, then try again.';
-    if(code===1){ msg="Location permission was blocked."; hint='Allow location access in your browser settings to see pharmacies near you.'; }
-    else if(code===2){ msg="Your location isn't available right now."; hint='Check your connection or GPS signal and try again.'; }
-    else if(code===3){ msg='Finding your location took too long.'; hint='Try again, or move somewhere with a better signal.'; }
-    userLocation=null;
-    updatePharmacyListLabel();
-    syncMapMarkers();
-    showLocationError(msg, hint);
+  mapboxMap.on('load', ()=>{
+    autoLocateOnPharmacies();
+    setTimeout(()=>mapboxMap.resize(),100);
   });
-
-  setTimeout(()=>leafletMap.invalidateSize(),100);
 }
 
 // ── Per-card editing ─────────────────────────────
@@ -3318,14 +3309,16 @@ function selectPickerItem(val,flag){
     Object.keys(searchCache).forEach(k=>delete searchCache[k]);
     // Refresh pharmacy cards immediately
     renderPharmacyCards();
-    // Re-centre and re-marker the map if it's already loaded.
-    // In location mode syncMapMarkers still pulls the nearby global set —
-    // destination change doesn't disturb the user's actual-location view.
-    if(leafletMap){
+    // In location mode we keep the user's actual-location view and data.
+    // In destination mode, fly the map and refetch pharmacies for the new country.
+    if(mapboxMap){
       const dest=DEST_MAP[selC]||DEST_MAP['United States'];
-      if(!userLocation) leafletMap.setView([dest.lat,dest.lng],dest.zoom);
-      syncMapMarkers();
-      setTimeout(()=>leafletMap.invalidateSize(),100);
+      if(!userLocation){
+        mapboxMap.flyTo({center:[dest.lng, dest.lat], zoom:dest.zoom||12, essential:true});
+        refreshPharmacies(dest.lng, dest.lat, {clearSearch:true});
+      }
+      updatePharmacyListLabel();
+      setTimeout(()=>mapboxMap.resize(),100);
     }
   } else if(pickerTarget==='home'){
     if(flag) document.getElementById('ts-home-flag').textContent=flag;
