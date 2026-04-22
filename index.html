@@ -385,10 +385,10 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <div class="page-header" style="position:relative">
     <button id="search-back-btn" class="back-btn" onclick="navHistory=[];clearSearch();" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div id="search-spacer" style="width:52px"></div>
-    <span class="logo-text" style="font-size:16px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
-  
+
   <div style="padding:12px 20px 14px;flex-shrink:0">
     <div class="inp-wrap" style="margin-bottom:10px">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -1841,6 +1841,39 @@ let liveResults=[];
 
 const EU_CODES=new Set(['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO']);
 
+// Country codes that currently have medication records in Supabase.
+// US, CA and TR have direct rows; EU-flagged rows cover EU_CODES as a group.
+// Used to decide whether an empty search result means "no equivalents at this
+// destination" (destination covered, medication genuinely not listed) or
+// "no data for this destination yet" (destination not yet in the DB).
+const COVERED_COUNTRY_CODES=new Set(['US','CA','TR',...EU_CODES]);
+
+function renderSearchEmptyState(){
+  const noRes=document.getElementById('s-no-results');
+  if(!noRes) return;
+  const destEl=document.getElementById('ts-dest-val');
+  const destName=destEl?destEl.textContent.trim():'';
+  const countryCode=COUNTRY_CODE_MAP[destName]||null;
+  const covered=countryCode && COVERED_COUNTRY_CODES.has(countryCode);
+  if(!covered && destName){
+    noRes.innerHTML=`
+      <div style="width:64px;height:64px;background:var(--surface-input);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3 style="font-size:16px;margin-bottom:6px;color:var(--text-primary)">We don't have data for ${destName} yet</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">Currently covered: United States, Canada, EU countries, and Turkey.</p>
+      <button onclick="openPicker('dest')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Change destination</button>`;
+    return;
+  }
+  noRes.innerHTML=`
+    <div style="width:64px;height:64px;background:var(--surface-input);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <h3 style="font-size:16px;margin-bottom:6px;color:var(--text-primary)">No equivalents found</h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">This medication may not be available in your destination. Consider bringing an adequate supply from home, or consult your doctor before travelling.</p>
+    <button onclick="goTo('pharmacies')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Find a pharmacist nearby</button>`;
+}
+
 async function querySupabase(term, rawInput){
   const cacheKey=rawInput||term;
   if(searchCache[cacheKey]) return searchCache[cacheKey];
@@ -2280,6 +2313,7 @@ async function handleSearch(v){
 
     } else {
       if(sl) sl.style.display='none';
+      renderSearchEmptyState();
       if(noRes) noRes.style.display='block';
     }
   }, 400);
@@ -2345,6 +2379,7 @@ async function selectMedLive(inn, brandName){
     // No results
     if(preview) preview.style.display='none';
     document.getElementById('s-sugg').style.display='block';
+    renderSearchEmptyState();
     document.getElementById('s-no-results').style.display='block';
   }
 }
