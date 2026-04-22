@@ -1775,6 +1775,8 @@ let searchTimer=null;
 let searchDebounceTimer=null;
 let liveResults=[];
 
+const EU_CODES=new Set(['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO']);
+
 async function querySupabase(term, rawInput){
   const cacheKey=rawInput||term;
   if(searchCache[cacheKey]) return searchCache[cacheKey];
@@ -1787,7 +1789,10 @@ async function querySupabase(term, rawInput){
 
   // Build filter — search by INN or brand name, optionally filter by country
   let filter=`or=(inn.ilike.*${encodeURIComponent(t)}*,brand_name.ilike.*${encodeURIComponent(q)}*)`;
-  if(countryCode) filter+=`&country_code=eq.${countryCode}`;
+  if(countryCode){
+    if(EU_CODES.has(countryCode)) filter+=`&country_code=in.(${countryCode},EU)`;
+    else filter+=`&country_code=eq.${countryCode}`;
+  }
   filter+=`&status=eq.active&limit=20`;
 
   const url=`${SUPA_URL}/rest/v1/medications?${filter}`;
