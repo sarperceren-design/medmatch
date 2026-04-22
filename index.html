@@ -741,7 +741,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       </label>
       </div>
       <p id="profile-display-name" style="font-size:17px;font-weight:700;color:var(--text-primary)">Cara Sarper</p>
-      <p style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Vancouver, BC</p>
+      <p id="profile-display-loc" style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span id="profile-display-loc-text">Vancouver, BC</span></p>
     </div>
 
     <!-- ── HEALTH DETAILS ── -->
@@ -784,6 +784,12 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         <span style="font-size:13px;color:var(--text-secondary)">Sex</span>
         <span class="prof-val" id="hd-v-sex" style="font-size:15px;font-weight:500;color:var(--text-primary)">Female</span>
         <input class="prof-inp" id="hd-i-sex" value="Female" style="display:none;width:140px;text-align:right">
+      </div>
+      <!-- Location -->
+      <div style="padding:13px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Location</span>
+        <span class="prof-val" id="hd-v-loc" style="font-size:15px;font-weight:500;color:var(--text-primary);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <input class="prof-inp" id="hd-i-loc" placeholder="City, Country" style="display:none;width:200px;text-align:right">
       </div>
       <!-- Blood type -->
       <div style="padding:13px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between">
@@ -1040,6 +1046,24 @@ const DB={
 let obStep=0,selC='',selHome='',dark=false,saved=new Set(),cdOpen=false,cdOpen2=false;
 
 function wrapFlag(f){return '<span style="font-family:Apple Color Emoji,Segoe UI Emoji,sans-serif">'+f+'</span>'}
+function attachTapOnly(btn, onTap){
+  let sx=0, sy=0, moved=false;
+  btn.addEventListener('touchstart',e=>{
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; moved=false;
+  },{passive:true});
+  btn.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    if(Math.abs(t.clientX-sx)>8 || Math.abs(t.clientY-sy)>8) moved=true;
+  },{passive:true});
+  btn.addEventListener('touchend',e=>{
+    if(moved) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onTap();
+  },{passive:false});
+  btn.addEventListener('touchcancel',()=>{ moved=true; },{passive:true});
+  btn.addEventListener('click',e=>{ e.stopPropagation(); onTap(); });
+}
 function renderClist(q=''){
   const clist=document.getElementById('clist');
   const filtered=COUNTRIES.filter(c=>c.n.toLowerCase().includes(q.toLowerCase()));
@@ -1047,11 +1071,10 @@ function renderClist(q=''){
     const sel=c.n===selC?' sel':'';
     return '<button class="copt'+sel+'" data-ci="'+i+'">'+wrapFlag(c.f)+' '+c.n+'</button>';
   }).join('');
-  // Attach events via addEventListener for reliable mobile touch
+  // Attach tap-only handlers — scroll drags should NOT select a country
   clist.querySelectorAll('.copt').forEach((btn,i)=>{
     const c=filtered[i];
-    btn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();selCountry(c.n,c.f);},{passive:false});
-    btn.addEventListener('click',e=>{e.stopPropagation();selCountry(c.n,c.f);});
+    attachTapOnly(btn, ()=>selCountry(c.n,c.f));
   });
 }
 function toggleCdrop(){
@@ -1072,8 +1095,7 @@ function renderClist2(q=''){
   }).join('');
   clist2.querySelectorAll('.copt').forEach((btn,i)=>{
     const c=filtered[i];
-    btn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();selCountry2(c.n,c.f);},{passive:false});
-    btn.addEventListener('click',e=>{e.stopPropagation();selCountry2(c.n,c.f);});
+    attachTapOnly(btn, ()=>selCountry2(c.n,c.f));
   });
 }
 function toggleCdrop2(){
@@ -1340,6 +1362,10 @@ function obNext(){
 
 // ── Recent searches with swipe ──
 let recents=[];
+// Last full query the user typed into the search box. Captured on each handleSearch
+// call so we keep the complete term even if selectMedLive replaces sinput.value
+// with a shorter brand name before the user taps a result.
+let lastTypedQuery='';
 let openSwipe=null;
 
 function renderRecents(){
@@ -2128,8 +2154,11 @@ function goToLiveDetail(i){
   // Save the user's search query (not the tapped medication) so they can re-run the same
   // search later. Example: user searches "Advil", taps "Nurofen" — we save "Advil" so they
   // can find Advil's equivalents again without remembering the foreign brand name.
+  // Prefer lastTypedQuery over sinput.value because selectMedLive may have already
+  // replaced the input with a shorter brand name.
   const inp=document.getElementById('sinput');
-  const term=inp?.value?.trim();
+  const currentInput=(inp?.value||'').trim();
+  const term=(lastTypedQuery && lastTypedQuery.length>=currentInput.length) ? lastTypedQuery : currentInput;
   if(term&&!recents.includes(term)){recents.unshift(term);if(recents.length>5)recents.pop();}
 
   // Show back button on search page
@@ -2179,6 +2208,9 @@ async function handleSearch(v){
   const preview=document.getElementById('s-ai-preview');
   const noRes=document.getElementById('s-no-results');
   const previewCards=document.getElementById('s-preview-cards');
+
+  if(!v || !v.trim()) lastTypedQuery='';
+  else if(v.trim().length>=2) lastTypedQuery=v.trim();
 
   if(v.length<2){
     if(ss) ss.style.display='none';
@@ -2343,6 +2375,7 @@ function renderPharmacyCards(){
   // Clear search input and reset to show all pharmacies
   const inp=document.getElementById('ph-search-input');
   if(inp) inp.value='';
+  phListExpanded=false;
   filterPharmacies('');
 }
 
@@ -2354,6 +2387,7 @@ function phFilter(f){
   const el=document.getElementById('ph-f-'+f);
   if(el) el.classList.add('ph-chip-on');
   // Re-render with current search term
+  phListExpanded=false;
   const q=document.getElementById('ph-search-input')?.value||'';
   filterPharmacies(q);
 }
@@ -2389,6 +2423,12 @@ function openPharmacyInMaps(lat,lng,name){
 function callPharmacyNumber(phone){
   window.location.href='tel:'+phone.replace(/[^+\d]/g,'');
 }
+let phListExpanded=false;
+function expandPharmacyList(){
+  phListExpanded=true;
+  const q=document.getElementById('ph-search-input')?.value||'';
+  filterPharmacies(q);
+}
 function renderPharmacyList(pharmacies){
   const list=document.getElementById('ph-card-list');
   if(!list) return;
@@ -2401,7 +2441,18 @@ function renderPharmacyList(pharmacies){
     return;
   }
 
-  list.innerHTML=pharmacies.map((p,i)=>{
+  // Default: show 3 nearest. "See more places" reveals the rest.
+  const sorted=[...pharmacies].sort((a,b)=>parseFloat(a.dist)-parseFloat(b.dist));
+  const hiddenCount=sorted.length-3;
+  const visible=phListExpanded||sorted.length<=3 ? sorted : sorted.slice(0,3);
+  const seeMoreBtn=(!phListExpanded && hiddenCount>0)
+    ? `<button onclick="expandPharmacyList()" style="width:100%;margin-top:4px;padding:12px;background:var(--surface-input);border:1px solid var(--border-card);border-radius:14px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        See ${hiddenCount} more ${hiddenCount===1?'place':'places'}
+      </button>`
+    : '';
+
+  list.innerHTML=visible.map((p,i)=>{
     const stockBadge=i<2?`<span style="background:var(--color-teal-tint);color:var(--on-teal-tint);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px">Stocks this med</span>`:'';
     const openColor=p.open?'#16A34A':'#9CA3AF';
     const openText=p.open?p.hours:`Closed · ${p.hours}`;
@@ -2426,7 +2477,7 @@ function renderPharmacyList(pharmacies){
         </div>
       </div>
     </div>`;
-  }).join('') + `<div class="wamb" style="margin-top:4px">
+  }).join('') + seeMoreBtn + `<div class="wamb" style="margin-top:4px">
     <div style="display:flex;gap:10px;align-items:flex-start">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <p style="font-size:12px;font-weight:600;color:var(--on-warning-tint)">Show this app to the pharmacist and verify the medication before purchasing</p>
@@ -2438,6 +2489,7 @@ function renderPharmacyList(pharmacies){
 let pharmSearchTimer=null;
 
 function handlePharmSearch(v){
+  phListExpanded=false;
   if(!v.trim()){
     filterPharmacies('');
     return;
@@ -2991,16 +3043,21 @@ function toggleCardEdit(card){
   label.textContent=editing?'Done':'Edit';
   label.style.color=editing?'#EF4444':'#4F6EF7';
   if(card==='hd'){
-    [['hd-v-first','hd-i-first'],['hd-v-last','hd-i-last'],['hd-v-dob','hd-i-dob'],['hd-v-sex','hd-i-sex']].forEach(([vId,iId])=>{
+    [['hd-v-first','hd-i-first'],['hd-v-last','hd-i-last'],['hd-v-dob','hd-i-dob'],['hd-v-sex','hd-i-sex'],['hd-v-loc','hd-i-loc']].forEach(([vId,iId])=>{
       const v=document.getElementById(vId),i=document.getElementById(iId);
       if(editing){i.value=v.textContent.trim();v.style.display='none';i.style.display='block';}
-      else{if(i.value.trim())v.textContent=i.value.trim();v.style.display='';i.style.display='none';}
+      else{if(i.value.trim())v.textContent=i.value.trim();else v.textContent='';v.style.display='';i.style.display='none';}
     });
     if(!editing){
       const first=document.getElementById('hd-v-first').textContent.trim();
       const last=document.getElementById('hd-v-last').textContent.trim();
       const pn=document.getElementById('profile-display-name');
       if(pn)pn.textContent=[first,last].filter(Boolean).join(' ');
+      const locText=document.getElementById('hd-v-loc').textContent.trim();
+      const locSpan=document.getElementById('profile-display-loc-text');
+      const locP=document.getElementById('profile-display-loc');
+      if(locSpan) locSpan.textContent=locText||'Add your location';
+      if(locP){ locP.style.color=locText?'':'var(--text-disabled)'; locP.style.fontStyle=locText?'':'italic'; }
     }
     const vB=document.getElementById('hd-v-blood'),iB=document.getElementById('hd-i-blood');
     if(editing){iB.value=vB.textContent.trim();vB.style.display='none';iB.style.display='block';}
@@ -3086,8 +3143,7 @@ function renderPickerCountries(q){
   }).join('');
   plist.querySelectorAll('button').forEach((btn,i)=>{
     const c=filtered[i];
-    btn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();selectPickerItem(c.n,c.f);},{passive:false});
-    btn.addEventListener('click',e=>{e.stopPropagation();selectPickerItem(c.n,c.f);});
+    attachTapOnly(btn, ()=>selectPickerItem(c.n,c.f));
   });
 }
 function filterPicker(q){renderPickerCountries(q);}
@@ -3160,6 +3216,7 @@ function saveCurrentProfile(){
   const data={
     first:getVal('hd-v-first'), last:getVal('hd-v-last'),
     dob:getVal('hd-v-dob'), sex:getVal('hd-v-sex'),
+    loc:getVal('hd-v-loc'),
     blood:getVal('hd-v-blood'), wheelchair:getVal('hd-v-wheelchair'),
     ecName:getVal('ec-v-name'), ecRel:getVal('ec-v-rel'), ecPhone:getVal('ec-v-phone'),
     midId:getVal('mid-v-id'),
@@ -3178,16 +3235,18 @@ function setEmptyField(id){
   el.style.fontWeight='400';
 }
 function clearProfileToEmpty(){
-  ['hd-v-first','hd-v-last','hd-v-dob','hd-v-sex','ec-v-name','ec-v-rel','ec-v-phone','mid-v-id'].forEach(setEmptyField);
-  ['hd-i-first','hd-i-last','hd-i-dob','hd-i-sex','ec-i-name','ec-i-rel','ec-i-phone','mid-i-id'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['hd-v-first','hd-v-last','hd-v-dob','hd-v-sex','hd-v-loc','ec-v-name','ec-v-rel','ec-v-phone','mid-v-id'].forEach(setEmptyField);
+  ['hd-i-first','hd-i-last','hd-i-dob','hd-i-sex','hd-i-loc','ec-i-name','ec-i-rel','ec-i-phone','mid-i-id'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const vB=document.getElementById('hd-v-blood');
   if(vB){vB.textContent=PROFILE_EMPTY_MARK;vB.style.background='var(--surface-input)';vB.style.color='var(--text-disabled)';vB.style.fontStyle='italic';}
   const vW=document.getElementById('hd-v-wheelchair');
   if(vW){vW.textContent=PROFILE_EMPTY_MARK;vW.style.background='var(--surface-input)';vW.style.color='var(--text-disabled)';vW.style.fontStyle='italic';}
   const pn=document.getElementById('profile-display-name');
   if(pn){pn.textContent='Your name';pn.style.color='var(--text-disabled)';pn.style.fontStyle='italic';}
-  const loc=document.querySelector('#page-profile .scroll p[style*="Vancouver"]');
-  if(loc){loc.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Add your location';loc.style.color='var(--text-disabled)';loc.style.fontStyle='italic';}
+  const locSpan=document.getElementById('profile-display-loc-text');
+  const locP=document.getElementById('profile-display-loc');
+  if(locSpan) locSpan.textContent='Add your location';
+  if(locP){ locP.style.color='var(--text-disabled)'; locP.style.fontStyle='italic'; }
   const photo=document.getElementById('profile-photo');
   if(photo){
     photo.removeAttribute('src');
@@ -3212,8 +3271,12 @@ function applySavedProfile(saved){
   const setField=(id,val)=>{const el=document.getElementById(id);if(!el)return;if(val){el.textContent=val;el.style.color='';el.style.fontStyle='';el.style.fontWeight='';}else{setEmptyField(id);}};
   setField('hd-v-first',saved.first);setField('hd-v-last',saved.last);
   setField('hd-v-dob',saved.dob);setField('hd-v-sex',saved.sex);
+  setField('hd-v-loc',saved.loc);
   setField('ec-v-name',saved.ecName);setField('ec-v-rel',saved.ecRel);setField('ec-v-phone',saved.ecPhone);
   setField('mid-v-id',saved.midId);
+  const locSpan2=document.getElementById('profile-display-loc-text');
+  const locP2=document.getElementById('profile-display-loc');
+  if(saved.loc && locSpan2){ locSpan2.textContent=saved.loc; if(locP2){ locP2.style.color=''; locP2.style.fontStyle=''; } }
   const vB=document.getElementById('hd-v-blood');
   if(vB && saved.blood){vB.textContent=saved.blood;vB.style.background='var(--color-coral-tint)';vB.style.color='var(--on-coral-tint)';vB.style.fontStyle='';}
   const vW=document.getElementById('hd-v-wheelchair');
