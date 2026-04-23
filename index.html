@@ -99,7 +99,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .device{width:390px;height:844px;background:#111;border-radius:50px;padding:8px;box-shadow:0 40px 100px rgba(0,0,0,0.5),inset 0 0 0 1.5px #444;flex-shrink:0}
 .screen{width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--surface-page);display:flex;flex-direction:column;position:relative}
 .page{display:none;flex-direction:column;flex:1;min-height:0;position:relative}
-.page.active{display:flex;flex-direction:column}
+.page.active{display:flex;flex-direction:column;animation:pageFadeIn 180ms cubic-bezier(.32,1,.23,1)}
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.skel{background:var(--surface-input);border-radius:6px;position:relative;overflow:hidden}
+.skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:skelShimmer 1.3s infinite}
+.dark .skel::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
+@keyframes skelShimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.skel-card{padding:14px;border:1px solid var(--border-card);background:var(--surface-card);border-radius:16px;box-shadow:var(--shadow)}
+@keyframes resultFadeIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:none}}
+.result-fade{animation:resultFadeIn 160ms cubic-bezier(.32,1,.23,1)}
+@media (prefers-reduced-motion:reduce){.page.active,.skel::after,.result-fade{animation:none}}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 /* Nav */
@@ -453,7 +462,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       </div>
     </div>
   </div>
-  <div class="tipbar"><p style="font-size:12px;color:var(--on-info-tint)"><strong>💡 Tip:</strong> Type a medication to find its local equivalent.</p></div>
+  <div class="tipbar" id="search-tipbar"><p style="font-size:12px;color:var(--on-info-tint)"><strong>💡 Tip:</strong> Type a medication to find its local equivalent.</p></div>
 </div>
 
 
@@ -538,12 +547,12 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       Find nearby pharmacies
     </button>
 
-    <!-- Post-pharmacy feedback -->
+    <!-- Post-pharmacy feedback — opens the user's mail client to medmatch.app.io@gmail.com -->
     <div style="margin-top:12px;background:var(--surface-input);border-radius:16px;padding:14px">
       <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px">Did a match work for you?</p>
       <div style="display:flex;gap:8px">
-        <button onclick="this.parentElement.parentElement.innerHTML='<p style=\'font-size:12px;color:var(--on-teal-tint);font-weight:600;text-align:center;padding:4px 0\'>✓ Thanks — this helps improve matches for everyone</p>'" style="flex:1;padding:9px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-teal-tint);cursor:pointer">👍 Yes, it worked</button>
-        <button onclick="this.parentElement.parentElement.innerHTML='<p style=\'font-size:12px;color:var(--on-orange-tint);font-weight:600;text-align:center;padding:4px 0\'>Thanks — we\'ll flag this match for review</p>'" style="flex:1;padding:9px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-orange-tint);cursor:pointer">👎 Didn't work</button>
+        <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20worked&body=Which%20medication%20were%20you%20matching%3F%0A%0AAny%20notes%20about%20the%20pharmacist%27s%20response%3F%0A" style="flex:1;padding:9px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-teal-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👍 Yes, it worked</a>
+        <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20didn%27t%20work&body=Which%20medication%20were%20you%20matching%3F%0A%0AWhat%20went%20wrong%3F%0A" style="flex:1;padding:9px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-orange-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👎 Didn't work</a>
       </div>
     </div>
   </div>
@@ -1042,6 +1051,18 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   </div>
 </div>
 
+<div id="source-sheet" onclick="if(event.target===this)closeSourceSheet()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
+  <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
+    <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
+    <h2 id="source-sheet-title" style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Data source</h2>
+    <p id="source-sheet-body" style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:20px"></p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button id="source-sheet-primary" style="display:none;width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Open source record</button>
+      <button onclick="closeSourceSheet()" style="width:100%;padding:15px;background:var(--surface-input);border:none;border-radius:16px;font-size:15px;font-weight:700;color:var(--text-primary);cursor:pointer">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="disclaimer-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
   <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
     <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
@@ -1410,7 +1431,29 @@ function saveCompletedSearch(term){
   if(existingIdx!==-1) recents.splice(existingIdx,1);
   recents.unshift(t);
   if(recents.length>5) recents.pop();
+  dismissSearchTipbar();
 }
+// Dismiss the "Type a medication…" tip after the first completed search.
+// Persisted via localStorage so it stays dismissed across sessions.
+const TIPBAR_KEY='mm_search_tipbar_dismissed';
+function dismissSearchTipbar(){
+  try { localStorage.setItem(TIPBAR_KEY,'1'); } catch {}
+  const el=document.getElementById('search-tipbar');
+  if(el) el.style.display='none';
+}
+(function(){
+  try {
+    if(localStorage.getItem(TIPBAR_KEY)==='1'){
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const el=document.getElementById('search-tipbar');
+        if(el) el.style.display='none';
+      });
+      // If the DOM is already parsed by the time this runs, hide immediately.
+      const el=document.getElementById('search-tipbar');
+      if(el) el.style.display='none';
+    }
+  } catch {}
+})();
 let openSwipe=null;
 
 function renderRecents(){
@@ -2181,21 +2224,35 @@ function medSourceInfo(med){
 //   3. no attribution    → seed/curated record that hasn't been verified yet.
 function showSourceInfo(med){
   const info=medSourceInfo(med);
+  const sheet=document.getElementById('source-sheet');
+  const titleEl=document.getElementById('source-sheet-title');
+  const bodyEl=document.getElementById('source-sheet-body');
+  const primary=document.getElementById('source-sheet-primary');
+  if(!sheet||!titleEl||!bodyEl||!primary) return;
+  titleEl.textContent=`Source: ${info.name}`;
   // State 1: we have a source URL — regulator is verifiable
   if(info.verified && info.url){
-    if(confirm(`Source: ${info.name}\n\nThis medication's record is sourced from a regulatory authority.\n\nTap OK to open the source record.`)){
-      window.open(info.url,'_blank');
-    }
-    return;
+    bodyEl.textContent=`This medication's record is sourced from a regulatory authority. Open the source record for full details.`;
+    primary.style.display='block';
+    primary.onclick=()=>{ window.open(info.url,'_blank','noopener'); closeSourceSheet(); };
   }
   // State 2: we have a source name but no URL — regulator attributed, not deep-linkable
-  // TİTCK (Turkey) doesn't publish per-drug pages, so we're honest about it
-  if(med&&med.source_name){
-    alert(`Source: ${info.name}\n\nThis medication is licensed by ${info.name}, which does not publish a public per-drug page we can link to. Record details come from official licensing data. Always confirm with a local pharmacist before purchasing.`);
-    return;
+  else if(med&&med.source_name){
+    bodyEl.textContent=`This medication is licensed by ${info.name}, which doesn't publish a public per-drug page we can link to. Record details come from official licensing data. Always confirm with a local pharmacist before purchasing.`;
+    primary.style.display='none';
+    primary.onclick=null;
   }
   // State 3: no regulator attribution yet — seed data
-  alert(`Source: ${info.name}\n\nThis medication was manually added to our database while we build live integrations with openFDA (US), Health Canada (CA), EMA (EU) and TİTCK (TR). It has not yet been verified against the primary regulator. Always confirm with a local pharmacist before purchasing.`);
+  else {
+    bodyEl.textContent=`This medication was manually added to our database while we build live integrations with openFDA (US), Health Canada (CA), EMA (EU) and TİTCK (TR). It has not yet been verified against the primary regulator. Always confirm with a local pharmacist before purchasing.`;
+    primary.style.display='none';
+    primary.onclick=null;
+  }
+  sheet.style.display='flex';
+}
+function closeSourceSheet(){
+  const sheet=document.getElementById('source-sheet');
+  if(sheet) sheet.style.display='none';
 }
 
 function scoreMatch(med, query){
@@ -2349,7 +2406,27 @@ async function handleSearch(v){
   if(sr) sr.style.display='none';
   if(ss) ss.style.display='block';
   if(preview) preview.style.display='none';
-  if(sl){ sl.style.display='flex'; sl.innerHTML=`<div style="padding:12px;display:flex;align-items:center;gap:10px"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite"></span><span style="font-size:14px;color:var(--text-secondary)">Finding equivalents...</span></div>`; }
+  if(sl){
+    sl.style.display='flex';
+    sl.style.flexDirection='column';
+    sl.style.gap='8px';
+    // Skeleton placeholder cards — mirror the real result card layout so there's
+    // no layout jump when the real data renders into the same slots.
+    const skelCard=`<div class="skel-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
+        <div class="skel" style="height:15px;flex:1;max-width:60%"></div>
+        <div class="skel" style="width:28px;height:28px;border-radius:50%"></div>
+      </div>
+      <div class="skel" style="height:11px;width:45%;margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="skel" style="height:14px;width:36px"></div>
+        <div class="skel" style="height:8px;width:8px;border-radius:50%"></div>
+        <div class="skel" style="height:12px;width:60px"></div>
+      </div>
+      <div class="skel" style="height:10px;width:70%;margin-top:10px"></div>
+    </div>`;
+    sl.innerHTML=skelCard+skelCard+skelCard;
+  }
   if(noRes) noRes.style.display='none';
 
   clearTimeout(searchDebounceTimer);
@@ -2387,7 +2464,7 @@ async function handleSearch(v){
           const level=matchLevel(score);
           const badge=matchBadgeClass(score);
           const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
-          return `<div class="rcard" style="cursor:pointer;padding:14px;position:relative" onclick="goToLiveDetail(${i})">
+          return `<div class="rcard result-fade" style="cursor:pointer;padding:14px;position:relative" onclick="goToLiveDetail(${i})">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
               <span style="font-size:15px;font-weight:700;color:var(--text-primary);flex:1">${displayName}</span>
               <button class="bm" id="bm-${i}" onclick="event.stopPropagation();toggleBm(${i})" style="position:relative;top:auto;right:auto;flex-shrink:0">
