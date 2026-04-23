@@ -129,7 +129,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .page-title{font-size:16px;font-weight:700;color:var(--text-primary)}
 .page-name-row{padding:2px 18px 10px;flex-shrink:0;border-bottom:1px solid var(--divider)}
 .page-name{font-size:16px;font-weight:700;color:var(--text-primary)}
-.back-btn{width:36px;height:28px;background:var(--surface-input);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary);flex-shrink:0}
+.back-btn{width:36px;height:36px;background:var(--surface-input);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary);flex-shrink:0}
 
 /* Logo */
 .logo{display:flex;align-items:center;gap:8px}
@@ -1715,7 +1715,7 @@ function renderSaved(){
   const PILL_ICO=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 L3.5 13.5 a5 5 0 0 1 7.07-7.07 L17.5 13.5 a5 5 0 0 1-7.07 7.07z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>`;
   scroll.innerHTML=`<p style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">${savedMeds.size} saved medication${savedMeds.size>1?'s':''}</p>`
   +Array.from(savedMeds.entries()).map(([key,med])=>{
-    const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
+    const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
     const liveIdx=liveResults.findIndex(m=>m.brand_name===med.brand_name);
     return `<div class="rcard" style="margin-bottom:12px;cursor:pointer" onclick="openSavedMed('${key.replace(/'/g,"\\'")}')">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -1831,6 +1831,14 @@ function resolveSearchTerm(v){
     if(lower.includes(brand)) return inn;
   }
   return lower;
+}
+
+// Convert a brand name to Title Case for display. Supabase sometimes returns
+// ALL-CAPS brand strings; we render them Title Case but keep the raw value
+// anywhere it's used as a map key, save key, or comparison target.
+function toTitleCase(str){
+  if(!str) return '';
+  return String(str).toLowerCase().replace(/\b\w/g, c=>c.toUpperCase());
 }
 
 // ── AI-assisted natural-language resolver ────────────────────────────────
@@ -2221,7 +2229,7 @@ function renderLiveResults(results, query){
     const level=matchLevel(score);
     const safetyClass=safetyBoxClass(score);
     const safetyTxt=safetyText(med,score);
-    const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
+    const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
     const sub=`${med.manufacturer||'Unknown'} · ${med.inn}`;
     return `<div class="rcard" style="margin-bottom:12px;position:relative" onclick="goToLiveDetail(${i})">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -2267,7 +2275,7 @@ function goToLiveDetail(i){
   const bb=document.getElementById('search-back-btn');
   if(bb) bb.style.display='flex';
   const score=scoreMatch(med, document.getElementById('sinput')?.value||med.inn);
-  document.getElementById('d-name').textContent=med.brand_name;
+  document.getElementById('d-name').textContent=toTitleCase(med.brand_name);
   document.getElementById('d-mfr').textContent=med.manufacturer||'Unknown';
   const badge=document.getElementById('d-badge');
   const matchEl=document.getElementById('d-match');
@@ -2360,7 +2368,7 @@ async function handleSearch(v){
           const score=scoreMatch(med,searchTerm);
           const level=matchLevel(score);
           const badge=matchBadgeClass(score);
-          const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
+          const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
           return `<div class="rcard" style="cursor:pointer;padding:14px;position:relative" onclick="goToLiveDetail(${i})">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
               <span style="font-size:15px;font-weight:700;color:var(--text-primary);flex:1">${displayName}</span>
@@ -2428,7 +2436,7 @@ async function selectMedLive(inn, brandName){
         const badge=matchBadgeClass(score);
         const level=matchLevel(score);
         const safetyClass=safetyBoxClass(score);
-        const displayName=med.brand_name+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
+        const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
         return `<div class="rcard" onclick="goToLiveDetail(${i})" style="padding:12px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
             <h3 style="font-size:15px">${displayName}</h3>
