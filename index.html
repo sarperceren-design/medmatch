@@ -1389,6 +1389,28 @@ let recents=[];
 // call so we keep the complete term even if selectMedLive replaces sinput.value
 // with a shorter brand name before the user taps a result.
 let lastTypedQuery='';
+
+// Save a completed search term to recents.
+// - Only called after the debounced search actually resolves with results,
+//   so partial in-flight queries never land here from a user tap.
+// - If the most recent entry is a strict prefix of this term (e.g. "stomac"
+//   then "stomach" a second later), drop the prefix — the user was mid-typing
+//   and the fuller form supersedes it.
+// - Existing exact-match entries are promoted to the top.
+function saveCompletedSearch(term){
+  if(!term) return;
+  const t=String(term).trim();
+  if(t.length<2) return;
+  const tLower=t.toLowerCase();
+  if(recents.length>0){
+    const prev=recents[0].toLowerCase();
+    if(prev!==tLower && tLower.startsWith(prev)) recents.shift();
+  }
+  const existingIdx=recents.findIndex(r=>r.toLowerCase()===tLower);
+  if(existingIdx!==-1) recents.splice(existingIdx,1);
+  recents.unshift(t);
+  if(recents.length>5) recents.pop();
+}
 let openSwipe=null;
 
 function renderRecents(){
@@ -2261,15 +2283,9 @@ function goToLiveDetail(i){
   if(!med) return;
   currentDetailMed=med;
 
-  // Save the user's search query (not the tapped medication) so they can re-run the same
-  // search later. Example: user searches "Advil", taps "Nurofen" — we save "Advil" so they
-  // can find Advil's equivalents again without remembering the foreign brand name.
-  // Prefer lastTypedQuery over sinput.value because selectMedLive may have already
-  // replaced the input with a shorter brand name.
-  const inp=document.getElementById('sinput');
-  const currentInput=(inp?.value||'').trim();
-  const term=(lastTypedQuery && lastTypedQuery.length>=currentInput.length) ? lastTypedQuery : currentInput;
-  if(term&&!recents.includes(term)){recents.unshift(term);if(recents.length>5)recents.pop();}
+  // Recents are saved when the debounced search actually returns results
+  // (see saveCompletedSearch in handleSearch) — never at tap time, so a user
+  // who taps a card mid-typing can't pin a partial-word query into history.
 
   // Show back button on search page
   const bb=document.getElementById('search-back-btn');
@@ -2361,6 +2377,8 @@ async function handleSearch(v){
 
     if(unique.length>0){
       liveResults=unique;
+      // Results loaded — this is the "completed search" moment the spec asks for.
+      saveCompletedSearch(v);
 
       // Show results directly in the suggestion list — tap any to go to detail
       if(sl){
