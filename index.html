@@ -405,6 +405,10 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <!-- Typing suggestions dropdown -->
     <div id="s-sugg" style="display:none;margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span class="dot" style="background:#4F6EF7;animation:pulse 1.5s infinite"></span><span style="font-size:11px;font-weight:700;color:#4F6EF7;text-transform:uppercase;letter-spacing:.5px">AI Suggestions</span></div>
+      <div id="s-ai-interp" style="display:none;margin:-4px 0 12px;font-size:12px;color:var(--text-secondary);line-height:1.45">
+        <span>Searching for: <span id="s-ai-inn" style="color:var(--text-primary);font-weight:600"></span><span id="s-ai-cat-wrap"> · <span id="s-ai-cat"></span></span></span>
+        <p id="s-ai-lowconf" style="display:none;margin:4px 0 0;font-size:11px;color:var(--text-disabled)">Results may not match exactly — try searching by medication name.</p>
+      </div>
       <div id="s-sugg-list" style="display:flex;flex-direction:column;gap:10px"></div>
       <!-- No results empty state -->
       <div id="s-no-results" style="display:none;padding:32px 0;text-align:center">
@@ -1829,6 +1833,60 @@ function resolveSearchTerm(v){
   return lower;
 }
 
+// ── AI-assisted natural-language resolver ────────────────────────────────
+// Cloudflare Worker interprets queries like "cold pills" or "something for
+// my stomach" into an INN. Only consulted when BRAND_MAP doesn't match —
+// silent failure falls back to the raw term.
+const AI_RESOLVER_URL='https://medmatch-ai.medmatch-app-io.workers.dev';
+const aiResolutionCache={};
+async function resolveWithAI(query){
+  const key=(query||'').toLowerCase().trim();
+  if(!key) return null;
+  if(aiResolutionCache[key]!==undefined) return aiResolutionCache[key];
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(), 6000);
+  try{
+    const res=await fetch(AI_RESOLVER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query}),
+      signal:controller.signal
+    });
+    clearTimeout(timer);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(!data || !data.inn){ aiResolutionCache[key]=null; return null; }
+    aiResolutionCache[key]=data;
+    return data;
+  }catch(err){
+    clearTimeout(timer);
+    console.warn('AI resolver unavailable:', err.message||err);
+    // Don't cache transient failures so the next keystroke can retry.
+    return null;
+  }
+}
+function showAIInterpretation(meta){
+  const el=document.getElementById('s-ai-interp');
+  if(!el || !meta || !meta.inn){ hideAIInterpretation(); return; }
+  const innEl=document.getElementById('s-ai-inn');
+  const catWrap=document.getElementById('s-ai-cat-wrap');
+  const catEl=document.getElementById('s-ai-cat');
+  const lowConf=document.getElementById('s-ai-lowconf');
+  if(innEl) innEl.textContent=meta.inn;
+  if(meta.category && catEl){
+    catEl.textContent=meta.category;
+    if(catWrap) catWrap.style.display='';
+  } else if(catWrap){
+    catWrap.style.display='none';
+  }
+  if(lowConf) lowConf.style.display=(meta.confidence==='low') ? 'block' : 'none';
+  el.style.display='block';
+}
+function hideAIInterpretation(){
+  const el=document.getElementById('s-ai-interp');
+  if(el) el.style.display='none';
+}
+
 // ── Supabase config ──────────────────────────────────────
 const SUPA_URL='https://rgswvfzalqlnhsdzykwj.supabase.co';
 const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnc3d2ZnphbHFsbmhzZHp5a3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Nzg3OTgsImV4cCI6MjA5MjE1NDc5OH0.WLIU8NeQwz3fj2ffPFxk6T7hrmHkRcLqmVxdcfSg400';
@@ -2272,11 +2330,26 @@ async function handleSearch(v){
 
   clearTimeout(searchDebounceTimer);
   searchDebounceTimer=setTimeout(async()=>{
-    const searchTerm=resolveSearchTerm(v);
+    const rawLower=v.toLowerCase().trim();
+    let searchTerm=resolveSearchTerm(v);
+    let aiMeta=null;
+    // BRAND_MAP resolved to a different INN → local match is enough, no AI.
+    // Otherwise, try the AI resolver to interpret natural-language queries.
+    if(searchTerm===rawLower){
+      aiMeta=await resolveWithAI(v);
+      if(aiMeta && aiMeta.inn){
+        searchTerm=aiMeta.inn.toLowerCase().trim();
+        showAIInterpretation(aiMeta);
+      } else {
+        hideAIInterpretation();
+      }
+    } else {
+      hideAIInterpretation();
+    }
     const results=await querySupabase(searchTerm, v);
     const unique=[...new Map(results.map(m=>[m.brand_name.toLowerCase(),m])).values()];
 
-    console.log('Results for', v, '→', searchTerm, ':', unique.length, 'unique');
+    console.log('Results for', v, '→', searchTerm, ':', unique.length, 'unique', aiMeta?'(AI)':'');
 
     if(unique.length>0){
       liveResults=unique;
