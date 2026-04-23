@@ -649,13 +649,13 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         </button>
       </div>
 
-      <!-- Post-pharmacy feedback — opens the user's mail client to medmatch.app.io@gmail.com -->
-      <div style="background:var(--surface-input);border-radius:16px;padding:14px">
-        <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px">Did a match work for you?</p>
-        <div style="display:flex;gap:8px">
-          <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20worked&body=Which%20medication%20were%20you%20matching%3F%0A%0AAny%20notes%20about%20the%20pharmacist%27s%20response%3F%0A" style="flex:1;padding:9px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-teal-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👍 Yes, it worked</a>
-          <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20didn%27t%20work&body=Which%20medication%20were%20you%20matching%3F%0A%0AWhat%20went%20wrong%3F%0A" style="flex:1;padding:9px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-orange-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👎 Didn't work</a>
-        </div>
+      <!-- Detail-page feedback — silently logs a positive rating to Supabase -->
+      <div id="detail-feedback" style="background:var(--surface-input);border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin:0">Was this helpful?</p>
+        <button id="detail-feedback-btn" onclick="submitDetailFeedback(this)" aria-label="Yes, this was helpful" style="padding:7px 14px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:13px;font-weight:600;color:var(--on-teal-tint);cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7V10l5-9a3 3 0 0 1 3 3z"/></svg>
+          <span>Yes</span>
+        </button>
       </div>
 
     </div>
@@ -1059,6 +1059,10 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     </div>
     <button id="scan-cta" onclick="stopScan(true)" style="width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Type it instead</button>
   </div>
+</div>
+
+<!-- Feedback toast — shown briefly after submitting silent feedback -->
+<div id="feedback-toast" style="display:none;position:absolute;left:50%;top:20px;transform:translateX(-50%);z-index:500;background:var(--surface-card);border:1px solid var(--border-card);box-shadow:0 4px 16px rgba(0,0,0,.22);border-radius:100px;padding:10px 18px;font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 200ms ease}
 </div>
 
 <div id="source-sheet" onclick="if(event.target===this)closeSourceSheet()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:400;align-items:flex-end;border-radius:42px">
@@ -1996,6 +2000,14 @@ function renderSearchEmptyState(){
   const destName=destEl?destEl.textContent.trim():'';
   const countryCode=COUNTRY_CODE_MAP[destName]||null;
   const covered=countryCode && COVERED_COUNTRY_CODES.has(countryCode);
+  const feedbackBlock=`
+    <div id="noresults-feedback" style="margin-top:24px;background:var(--surface-input);border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left">
+      <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin:0">Couldn't find what you needed?</p>
+      <button id="noresults-feedback-btn" onclick="submitNoResultsFeedback(this)" aria-label="Flag this missing search" style="padding:7px 14px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:13px;font-weight:600;color:var(--on-orange-tint);cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17v12l-5 9a3 3 0 0 1-3-3z"/></svg>
+        <span>Flag</span>
+      </button>
+    </div>`;
   if(!covered && destName){
     noRes.innerHTML=`
       <div style="width:64px;height:64px;background:var(--surface-input);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
@@ -2003,7 +2015,8 @@ function renderSearchEmptyState(){
       </div>
       <h3 style="font-size:16px;margin-bottom:6px;color:var(--text-primary)">We don't have data for ${destName} yet</h3>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">Currently covered: United States, Canada, EU countries, and Turkey.</p>
-      <button onclick="openPicker('dest')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Change destination</button>`;
+      <button onclick="openPicker('dest')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Change destination</button>
+      ${feedbackBlock}`;
     return;
   }
   noRes.innerHTML=`
@@ -2012,7 +2025,77 @@ function renderSearchEmptyState(){
     </div>
     <h3 style="font-size:16px;margin-bottom:6px;color:var(--text-primary)">No equivalents found</h3>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">This medication may not be available in your destination. Consider bringing an adequate supply from home, or consult your doctor before travelling.</p>
-    <button onclick="goTo('pharmacies')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Find a pharmacist nearby</button>`;
+    <button onclick="goTo('pharmacies')" style="background:var(--color-purple-tint);border:1.5px solid var(--color-purple-light);color:var(--on-purple-tint);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Find a pharmacist nearby</button>
+    ${feedbackBlock}`;
+}
+
+// ── Silent feedback → Supabase ────────────────────────────────
+// POSTs a row to the `feedback` table. Fire-and-forget: failures don't
+// surface an error UI (that would defeat the "silent" part).
+async function postFeedback(row){
+  try {
+    await fetch(`${SUPA_URL}/rest/v1/feedback`,{
+      method:'POST',
+      headers:{
+        'apikey':SUPA_ANON,
+        'Authorization':'Bearer '+SUPA_ANON,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify(row)
+    });
+  } catch(e){
+    console.warn('Feedback post failed:', e);
+  }
+}
+let feedbackToastTimer=null;
+function showFeedbackToast(msg){
+  const toast=document.getElementById('feedback-toast');
+  if(!toast) return;
+  toast.textContent=msg||'Thanks for your feedback! 🙏';
+  toast.style.display='block';
+  // Force reflow so the opacity transition applies on the next frame.
+  void toast.offsetWidth;
+  toast.style.opacity='1';
+  clearTimeout(feedbackToastTimer);
+  feedbackToastTimer=setTimeout(()=>{
+    toast.style.opacity='0';
+    setTimeout(()=>{ if(toast.style.opacity==='0') toast.style.display='none'; },220);
+  }, 2000);
+}
+function markFeedbackReceived(btn){
+  if(!btn) return;
+  btn.disabled=true;
+  btn.style.background='var(--surface-input)';
+  btn.style.borderColor='var(--border-card)';
+  btn.style.color='var(--text-disabled)';
+  btn.style.cursor='default';
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Feedback received</span>';
+}
+function submitDetailFeedback(btn){
+  const med=currentDetailMed;
+  if(!med) return;
+  postFeedback({
+    type:'positive',
+    medication_name:med.brand_name||null,
+    inn:med.inn||null,
+    country_code:med.country_code||COUNTRY_CODE_MAP[(document.getElementById('ts-dest-val')||{}).textContent?.trim()]||null,
+    search_query:null
+  });
+  markFeedbackReceived(btn);
+  showFeedbackToast('Thanks for your feedback! 🙏');
+}
+function submitNoResultsFeedback(btn){
+  const destText=(document.getElementById('ts-dest-val')||{}).textContent?.trim()||'';
+  postFeedback({
+    type:'negative',
+    medication_name:null,
+    inn:null,
+    country_code:COUNTRY_CODE_MAP[destText]||null,
+    search_query:(lastTypedQuery||(document.getElementById('sinput')||{}).value||'').trim()||null
+  });
+  markFeedbackReceived(btn);
+  showFeedbackToast('Thanks for your feedback! 🙏');
 }
 
 async function querySupabase(term, rawInput){
