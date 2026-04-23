@@ -1901,6 +1901,24 @@ const BRAND_MAP={
   'aspirin':'aspirin','bayer':'aspirin',
   'benadryl':'diphenhydramine','piriton':'chlorphenamine',
   'sudafed':'pseudoephedrine',
+  // Natural-language category searches — map plain-English symptom/category
+  // phrases to the INN used in the medications table so the existing search
+  // pipeline resolves them before the AI worker is consulted.
+  'birth control':'levonorgestrel',
+  'sleeping pill':'diphenhydramine hydrochloride',
+  'can\'t sleep':'diphenhydramine hydrochloride',
+  'sleep aid':'diphenhydramine hydrochloride',
+  'insomnia':'diphenhydramine hydrochloride',
+  'blood pressure':'amlodipine besylate',
+  'diabetes':'metformin hydrochloride',
+  'heartburn':'omeprazole',
+  'acid reflux':'omeprazole',
+  'cholesterol':'atorvastatin',
+  'anxiety':'pregabalin',
+  'depression':'bupropion hydrochloride',
+  'quit smoking':'nicotine',
+  'antifungal':'tolnaftate',
+  'dandruff':'pyrithione zinc',
 };
 
 function resolveSearchTerm(v){
