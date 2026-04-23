@@ -2094,7 +2094,9 @@ function submitNoResultsFeedback(btn){
     country_code:COUNTRY_CODE_MAP[destText]||null,
     search_query:(lastTypedQuery||(document.getElementById('sinput')||{}).value||'').trim()||null
   });
-  markFeedbackReceived(btn);
+  // Disable re-tap silently — no inline "Feedback received" state. The toast
+  // is the only visible acknowledgement, matching the detail-page thumbs-up.
+  if(btn){ btn.disabled=true; btn.style.pointerEvents='none'; }
   showFeedbackToast('Thanks for your feedback! 🙏');
 }
 
