@@ -99,8 +99,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .device{width:390px;height:844px;background:#111;border-radius:50px;padding:8px;box-shadow:0 40px 100px rgba(0,0,0,0.5),inset 0 0 0 1.5px #444;flex-shrink:0}
 .screen{width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--surface-page);display:flex;flex-direction:column;position:relative}
 .page{display:none;flex-direction:column;flex:1;min-height:0;position:relative}
-.page.active{display:flex;flex-direction:column;animation:pageFadeIn 180ms cubic-bezier(.32,1,.23,1)}
-@keyframes pageFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page.active{display:flex;flex-direction:column;animation:pageFadeIn 250ms cubic-bezier(0.42,0,0.58,1)}
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .skel{background:var(--surface-input);border-radius:6px;position:relative;overflow:hidden}
 .skel::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:skelShimmer 1.3s infinite}
 .dark .skel::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
@@ -520,9 +520,9 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   
-  <div class="scroll" style="padding:20px 20px 80px">
-    <!-- Destination context + match legend -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+  <!-- Destination context + match legend — fixed below the header -->
+  <div style="flex-shrink:0;padding:16px 20px 12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
       <div style="display:flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
         <span style="font-size:13px;font-weight:600;color:#4F6EF7" id="results-dest-label">Turkey</span>
@@ -531,31 +531,29 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <button onclick="document.getElementById('match-legend').style.display=document.getElementById('match-legend').style.display==='none'?'flex':'none'" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-disabled);text-decoration:underline;padding:0">What's this?</button>
     </div>
     <!-- Match legend (hidden by default) -->
-    <div id="match-legend" style="display:none;flex-direction:column;gap:6px;background:var(--surface-input);border-radius:14px;padding:14px;margin-bottom:14px">
+    <div id="match-legend" style="display:none;flex-direction:column;gap:6px;background:var(--surface-input);border-radius:14px;padding:14px;margin-top:12px">
       <p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">How match % works</p>
       <div style="display:flex;align-items:center;gap:8px"><span class="m100" style="font-size:11px;flex-shrink:0">90–100%</span><span style="font-size:12px;color:var(--text-secondary)">Same active ingredient and strength</span></div>
       <div style="display:flex;align-items:center;gap:8px"><span class="m75" style="font-size:11px;flex-shrink:0">65–89%</span><span style="font-size:12px;color:var(--text-secondary)">Same ingredient, different dose or added compounds</span></div>
       <div style="display:flex;align-items:center;gap:8px"><span class="m55" style="font-size:11px;flex-shrink:0">Below 65%</span><span style="font-size:12px;color:var(--text-secondary)">Significant difference — pharmacist confirmation required</span></div>
     </div>
+  </div>
+
+  <!-- Only the results list scrolls -->
+  <div class="scroll" style="padding:0 20px 12px">
     <div style="display:flex;flex-direction:column;gap:12px" id="results-cards-container">
       <!-- Live results injected here by renderLiveResults() -->
     </div>
+  </div>
 
-    <!-- Find pharmacies button -->
-    <button class="btn" style="margin-top:16px" onclick="navHistory.push('results');goTo('pharmacies',true)">
+  <!-- Fixed CTA pinned above the banner -->
+  <div style="flex-shrink:0;padding:12px 20px;background:var(--surface-page);border-top:1px solid var(--divider)">
+    <button class="btn" onclick="navHistory.push('results');goTo('pharmacies',true)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
       Find nearby pharmacies
     </button>
-
-    <!-- Post-pharmacy feedback — opens the user's mail client to medmatch.app.io@gmail.com -->
-    <div style="margin-top:12px;background:var(--surface-input);border-radius:16px;padding:14px">
-      <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px">Did a match work for you?</p>
-      <div style="display:flex;gap:8px">
-        <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20worked&body=Which%20medication%20were%20you%20matching%3F%0A%0AAny%20notes%20about%20the%20pharmacist%27s%20response%3F%0A" style="flex:1;padding:9px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-teal-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👍 Yes, it worked</a>
-        <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20didn%27t%20work&body=Which%20medication%20were%20you%20matching%3F%0A%0AWhat%20went%20wrong%3F%0A" style="flex:1;padding:9px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-orange-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👎 Didn't work</a>
-      </div>
-    </div>
   </div>
+
   <div style="flex-shrink:0;background:var(--color-banner-bg);padding:12px 20px;display:flex;align-items:flex-start;gap:10px">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-banner-icon)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <div>
@@ -651,14 +649,26 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         </button>
       </div>
 
-      <!-- Find nearby pharmacies -->
-      <button class="btn" onclick="navHistory.push('detail');goTo('pharmacies',true)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-        Find nearby pharmacies
-      </button>
+      <!-- Post-pharmacy feedback — opens the user's mail client to medmatch.app.io@gmail.com -->
+      <div style="background:var(--surface-input);border-radius:16px;padding:14px">
+        <p style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px">Did a match work for you?</p>
+        <div style="display:flex;gap:8px">
+          <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20worked&body=Which%20medication%20were%20you%20matching%3F%0A%0AAny%20notes%20about%20the%20pharmacist%27s%20response%3F%0A" style="flex:1;padding:9px;background:var(--color-teal-tint);border:1.5px solid var(--color-teal-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-teal-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👍 Yes, it worked</a>
+          <a href="mailto:medmatch.app.io@gmail.com?subject=MedMatch%20feedback%20%E2%80%94%20match%20didn%27t%20work&body=Which%20medication%20were%20you%20matching%3F%0A%0AWhat%20went%20wrong%3F%0A" style="flex:1;padding:9px;background:var(--color-orange-tint);border:1.5px solid var(--color-orange-light);border-radius:100px;font-size:12px;font-weight:600;color:var(--on-orange-tint);cursor:pointer;text-align:center;text-decoration:none;display:inline-block">👎 Didn't work</a>
+        </div>
+      </div>
 
     </div>
   </div>
+
+  <!-- Fixed CTA pinned above the banner -->
+  <div style="flex-shrink:0;padding:12px 20px;background:var(--surface-page);border-top:1px solid var(--divider)">
+    <button class="btn" onclick="navHistory.push('detail');goTo('pharmacies',true)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      Find nearby pharmacies
+    </button>
+  </div>
+
   <div style="flex-shrink:0;background:var(--color-banner-bg);padding:12px 20px;display:flex;align-items:flex-start;gap:10px">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-banner-icon)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <div>
@@ -1057,7 +1067,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <h2 id="source-sheet-title" style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px">Data source</h2>
     <p id="source-sheet-body" style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:20px"></p>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <button id="source-sheet-primary" style="display:none;width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">Open source record</button>
+      <a id="source-sheet-primary" href="#" target="_blank" rel="noopener noreferrer" onclick="closeSourceSheet()" style="display:none;width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">Open source record</a>
       <button onclick="closeSourceSheet()" style="width:100%;padding:15px;background:var(--surface-input);border:none;border-radius:16px;font-size:15px;font-weight:700;color:var(--text-primary);cursor:pointer">Close</button>
     </div>
   </div>
@@ -2233,20 +2243,22 @@ function showSourceInfo(med){
   // State 1: we have a source URL — regulator is verifiable
   if(info.verified && info.url){
     bodyEl.textContent=`This medication's record is sourced from a regulatory authority. Open the source record for full details.`;
+    // Use native anchor navigation — more reliable than window.open() which
+    // some browsers / embed contexts treat as a blocked popup.
+    primary.setAttribute('href', info.url);
     primary.style.display='block';
-    primary.onclick=()=>{ window.open(info.url,'_blank','noopener'); closeSourceSheet(); };
   }
   // State 2: we have a source name but no URL — regulator attributed, not deep-linkable
   else if(med&&med.source_name){
     bodyEl.textContent=`This medication is licensed by ${info.name}, which doesn't publish a public per-drug page we can link to. Record details come from official licensing data. Always confirm with a local pharmacist before purchasing.`;
+    primary.removeAttribute('href');
     primary.style.display='none';
-    primary.onclick=null;
   }
   // State 3: no regulator attribution yet — seed data
   else {
     bodyEl.textContent=`This medication was manually added to our database while we build live integrations with openFDA (US), Health Canada (CA), EMA (EU) and TİTCK (TR). It has not yet been verified against the primary regulator. Always confirm with a local pharmacist before purchasing.`;
+    primary.removeAttribute('href');
     primary.style.display='none';
-    primary.onclick=null;
   }
   sheet.style.display='flex';
 }
