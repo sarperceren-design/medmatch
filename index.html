@@ -1866,7 +1866,7 @@ const BRAND_MAP={
   'augmentin':'amoxicillin','amoxil':'amoxicillin','trimox':'amoxicillin',
   'apo-amoxi':'amoxicillin','amoksiklav':'amoxicillin',
   // Cetirizine
-  'zyrtec':'cetirizine','reactine':'cetirizine','zirtec':'cetirizine',
+  'zyrtec':'cetirizine hydrochloride','reactine':'cetirizine','zirtec':'cetirizine',
   'piriteze':'cetirizine','alertek':'cetirizine','apo-cetirizine':'cetirizine',
   'benadryl allergy':'cetirizine',
   // Loratadine
@@ -1880,13 +1880,13 @@ const BRAND_MAP={
   // Naproxen
   'aleve':'naproxen','naprosyn':'naproxen','feminax ultra':'naproxen',
   // Metformin
-  'glucophage':'metformin','fortamet':'metformin','apo-metformin':'metformin',
+  'glucophage':'metformin hydrochloride','fortamet':'metformin','apo-metformin':'metformin',
   // Atorvastatin
   'lipitor':'atorvastatin','torvast':'atorvastatin','apo-atorvastatin':'atorvastatin',
   // Amlodipine
   'norvasc':'amlodipine','istin':'amlodipine',
   // Diclofenac
-  'voltaren':'diclofenac','voltarol':'diclofenac','cataflam':'diclofenac',
+  'voltaren':'diclofenac sodium','voltarol':'diclofenac','cataflam':'diclofenac',
   'voltarene':'diclofenac','voltaren emulgel':'diclofenac',
   // Azithromycin
   'zithromax':'azithromycin','zitromax':'azithromycin','apo-azithromycin':'azithromycin',
@@ -1900,7 +1900,7 @@ const BRAND_MAP={
   'motilium':'domperidone','apo-domperidone':'domperidone',
   // Other common
   'aspirin':'aspirin','bayer':'aspirin',
-  'benadryl':'diphenhydramine','piriton':'chlorphenamine',
+  'benadryl':'diphenhydramine hydrochloride','piriton':'chlorphenamine',
   'sudafed':'pseudoephedrine',
   // Natural-language category searches — map plain-English symptom/category
   // phrases to the INN used in the medications table so the existing search
@@ -1920,6 +1920,27 @@ const BRAND_MAP={
   'quit smoking':'nicotine',
   'antifungal':'tolnaftate',
   'dandruff':'pyrithione zinc',
+  // Common misspellings — route obvious typos to the correct INN before
+  // the AI resolver is consulted.
+  'ibuprofin':'ibuprofen',
+  'iboprofen':'ibuprofen',
+  'acetaminophin':'acetaminophen',
+  'amoxicilin':'amoxicillin',
+  'magnasium':'magnesium',
+  // Melatonin isn't in the database; route to the closest sleep aid we stock.
+  'melatonin':'diphenhydramine hydrochloride',
+  // Additional brand → INN mappings (full INN forms used in the medications table).
+  'paracetamol':'acetaminophen',
+  'pepcid':'famotidine',
+  'nexium':'omeprazole',
+  'neurontin':'gabapentin',
+  'lyrica':'pregabalin',
+  'wellbutrin':'bupropion hydrochloride',
+  'allegra':'fexofenadine hydrochloride',
+  'zantac':'famotidine',
+  'tums':'calcium carbonate',
+  'senokot':'docusate sodium',
+  'gravol':'diphenhydramine hydrochloride',
 };
 
 function resolveSearchTerm(v){
@@ -2590,8 +2611,17 @@ async function handleSearch(v){
     const results=await querySupabase(searchTerm, v);
     const unique=[...new Map(results.map(m=>[m.brand_name.toLowerCase(),m])).values()];
 
-    // Fire-and-forget analytics ping — tracks both successful and empty searches.
-    logSearch(v, unique.length);
+    // Fire-and-forget analytics ping — only log COMPLETED searches:
+    //  · 3+ characters (skip the "M","Ma","Mag" prefix-spam pattern)
+    //  · debounce fired AND results returned (we're already past the await)
+    //  · user hasn't kept typing past `v` (input value still matches);
+    //    if it doesn't, another debounced fetch is incoming and will log
+    //    the more complete term.
+    const _sinp=document.getElementById('sinput');
+    const _stillCurrent=_sinp ? _sinp.value===v : true;
+    if(v && v.trim().length>=3 && _stillCurrent){
+      logSearch(v, unique.length);
+    }
 
     console.log('Results for', v, '→', searchTerm, ':', unique.length, 'unique', aiMeta?'(AI)':'');
 
