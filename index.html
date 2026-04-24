@@ -2341,29 +2341,45 @@ function showSearchError(){
 // This function returns the truthful source attribution. When real data pipelines
 // land (Phase 3), medications will carry a `source_name` + `source_url` field
 // populated at import time, and this function will prefer those over the defaults.
+// Top-level regulator database URL for each supported country. Used as a
+// fallback when a record doesn't have its own `source_url` — tapping the
+// info icon should still land the user on the correct national drug
+// database (Health Canada DPD for CA, openFDA for US, EMA for EU), even
+// if we can't deep-link to the specific record.
+function countryRegulatorUrl(cc){
+  if(!cc) return null;
+  if(cc==='CA') return 'https://health-products.canada.ca/dpd-bdpp/index-eng.jsp';
+  if(cc==='US') return 'https://open.fda.gov/';
+  if(cc==='EU'||EU_CODES.has(cc)) return 'https://www.ema.europa.eu/en/medicines';
+  return null;
+}
+
 function medSourceInfo(med){
+  const cc=(med&&med.country_code)||'';
+  const fallbackUrl=countryRegulatorUrl(cc);
   // Prefer fields stored on the record itself once the data pipeline is live
   if(med&&med.source_name){
     return {
       name: med.source_name,
-      url: med.source_url||null,
+      // Deep-link if we have one; otherwise send the user to the country's
+      // top-level regulator database so the info button always goes somewhere.
+      url: med.source_url||fallbackUrl||null,
       verified: !!med.source_url,
       short: med.source_name
     };
   }
   // Fallback: honest default based on country_code for seed data
-  const cc=(med&&med.country_code)||'';
   if(cc==='US'){
     return {
       name: 'MedMatch curated — awaiting openFDA sync',
-      url: null,
+      url: fallbackUrl,
       verified: false,
       short: 'MedMatch curated'
     };
   }
   return {
     name: 'MedMatch curated — awaiting regulator sync',
-    url: null,
+    url: fallbackUrl,
     verified: false,
     short: 'MedMatch curated'
   };
@@ -2389,7 +2405,7 @@ function showSourceInfo(med){
   const primary=document.getElementById('source-sheet-primary');
   if(!sheet||!titleEl||!bodyEl||!primary) return;
   titleEl.textContent=`Source: ${info.name}`;
-  // State 1: we have a source URL — regulator is verifiable
+  // State 1: record has its own verified deep-link URL
   if(info.verified && info.url){
     bodyEl.textContent=`This medication's record is sourced from a regulatory authority. Open the source record for full details.`;
     // Use native anchor navigation — more reliable than window.open() which
@@ -2397,13 +2413,22 @@ function showSourceInfo(med){
     primary.setAttribute('href', info.url);
     primary.style.display='block';
   }
-  // State 2: we have a source name but no URL — regulator attributed, not deep-linkable
+  // State 2: no deep-link URL, but we can point at the country's national drug
+  // database (Health Canada DPD / openFDA / EMA) so the user can still look up
+  // the record themselves.
+  else if(info.url){
+    bodyEl.textContent=`We don't have a direct regulator link for this record yet. Open the national drug database to look it up and always confirm with a local pharmacist before purchasing.`;
+    primary.setAttribute('href', info.url);
+    primary.style.display='block';
+  }
+  // State 3: we have a source name but no URL — regulator attributed, not deep-linkable,
+  // and no country fallback (e.g. Turkey's TİTCK).
   else if(med&&med.source_name){
     bodyEl.textContent=`This medication is licensed by ${info.name}, which doesn't publish a public per-drug page we can link to. Record details come from official licensing data. Always confirm with a local pharmacist before purchasing.`;
     primary.removeAttribute('href');
     primary.style.display='none';
   }
-  // State 3: no regulator attribution yet — seed data
+  // State 4: no regulator attribution yet and no country fallback — seed data
   else {
     bodyEl.textContent=`This medication was manually added to our database while we build live integrations with openFDA (US), Health Canada (CA), EMA (EU) and TİTCK (TR). It has not yet been verified against the primary regulator. Always confirm with a local pharmacist before purchasing.`;
     primary.removeAttribute('href');
