@@ -255,12 +255,21 @@ input[type=text]:focus{border-color:#4F6EF7}
 
 .prof-val{font-size:15px;font-weight:500;color:var(--text-primary)}
 .prof-inp{width:100%;padding:8px 12px;font-size:14px;border-radius:10px;border:1.5px solid var(--color-purple);background:var(--surface-input);color:var(--text-primary);outline:none;font-family:inherit}
-.prof-field{-webkit-appearance:none;appearance:none;padding:7px 10px;font-size:14px;border-radius:8px;border:1px solid var(--divider);background:var(--surface-input);color:var(--text-primary);outline:none;font-family:inherit;box-sizing:border-box;min-height:34px;max-width:180px;text-align:right;transition:border-color .15s}
-.prof-field:focus{border-color:var(--color-purple)}
-.prof-field::placeholder{color:var(--text-disabled)}
-select.prof-field{text-align-last:right;padding-right:26px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
-input.prof-field[type="date"]::-webkit-date-and-time-value{text-align:right}
-input.prof-field[type="date"]::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer;margin-left:4px}
+/* iOS Settings — chrome-less text field (First/Last/City, EC Name, EC Phone). */
+.prof-text{-webkit-appearance:none;appearance:none;border:0;background:transparent;padding:7px 0;font-size:14px;font-family:inherit;color:var(--text-primary);outline:none;text-align:right;width:60%;max-width:60%;min-width:0;box-sizing:border-box}
+.prof-text::placeholder{color:var(--text-disabled)}
+/* iOS Settings — chip style. Every chip (dropdown + DOB) is exactly 140px wide. */
+.prof-chip{-webkit-appearance:none;appearance:none;width:140px;padding:7px 10px;font-size:14px;font-family:inherit;border-radius:8px;border:1px solid var(--divider);background:var(--surface-input);color:var(--text-primary);outline:none;box-sizing:border-box;min-height:34px;text-align:right;transition:border-color .15s}
+.prof-chip:focus{border-color:var(--color-purple)}
+.prof-chip::placeholder{color:var(--text-disabled)}
+select.prof-chip{text-align-last:right;padding-right:26px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
+select.prof-chip.is-empty{color:var(--text-disabled)}
+/* DOB chip wrapper: native <input type="date"> overlays invisibly to trigger the picker;
+   visible text is a sibling span so we can show "Add date" in the empty state. */
+.prof-chip-date{display:inline-flex;align-items:center;justify-content:flex-end;position:relative;cursor:pointer;overflow:hidden}
+.prof-chip-date input[type="date"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;margin:0;background:transparent;font-family:inherit;color:var(--text-primary)}
+.prof-chip-date-text{font-size:14px;color:var(--text-primary);pointer-events:none;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-chip-date-text.is-empty{color:var(--text-disabled)}
 
 /* Tip bar — teal, distinct from orange warnings and purple search cards */
 .tipbar{background:var(--color-info-tint);border-top:1px solid var(--color-info);padding:10px 20px;position:absolute;bottom:0;left:0;right:0;z-index:5}
@@ -804,25 +813,28 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         </div>
       </div>
       <!-- First name -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <label for="hd-i-first" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">First name</span>
-        <input class="prof-field" id="hd-i-first" type="text" value="Cara" placeholder="—" onblur="onHdTextBlur()">
-      </div>
+        <input class="prof-text" id="hd-i-first" type="text" value="Cara" placeholder="Add first name" onblur="onHdTextBlur()">
+      </label>
       <!-- Last name -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <label for="hd-i-last" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Last name</span>
-        <input class="prof-field" id="hd-i-last" type="text" value="Sarper" placeholder="—" onblur="onHdTextBlur()">
-      </div>
+        <input class="prof-text" id="hd-i-last" type="text" value="Sarper" placeholder="Add last name" onblur="onHdTextBlur()">
+      </label>
       <!-- Date of birth -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Date of birth</span>
-        <input class="prof-field" id="hd-i-dob" type="date" value="1990-03-16" onchange="onHdDobChange()">
+        <label class="prof-chip prof-chip-date" for="hd-i-dob">
+          <input type="date" id="hd-i-dob" value="1990-03-16" onchange="onHdDobChange()">
+          <span class="prof-chip-date-text" id="hd-i-dob-display">Add date</span>
+        </label>
       </div>
       <!-- Sex -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Sex</span>
-        <select class="prof-field" id="hd-i-sex" onchange="onHdSexChange()">
-          <option value="">—</option>
+        <select class="prof-chip" id="hd-i-sex" onchange="onHdSexChange()">
+          <option value="">Select</option>
           <option value="Female" selected>Female</option>
           <option value="Male">Male</option>
           <option value="Other">Other</option>
@@ -831,35 +843,35 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <!-- Pregnant — only shown when sex is female or unspecified -->
       <div id="hd-row-pregnant" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Pregnant</span>
-        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
-          <input type="checkbox" id="hd-i-pregnant" onchange="onPregnantToggle()" style="width:18px;height:18px;accent-color:var(--color-purple);cursor:pointer">
-          <span id="hd-v-pregnant" style="font-size:15px;font-weight:500;color:var(--text-primary)">No</span>
-        </label>
+        <select class="prof-chip" id="hd-i-pregnant" onchange="onPregnantChange()">
+          <option value="false" selected>No</option>
+          <option value="true">Yes</option>
+        </select>
       </div>
       <!-- City -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <label for="hd-i-city" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">City</span>
-        <input class="prof-field" id="hd-i-city" type="text" value="" placeholder="—" onblur="onHdCityBlur()">
-      </div>
+        <input class="prof-text" id="hd-i-city" type="text" value="" placeholder="Add city" onblur="onHdCityBlur()">
+      </label>
       <!-- Country -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Country</span>
-        <select class="prof-field" id="hd-i-country" style="max-width:220px" onchange="onHdCountryChange()">
-          <option value="">—</option>
+        <select class="prof-chip" id="hd-i-country" onchange="onHdCountryChange()">
+          <option value="">Select country</option>
         </select>
       </div>
       <!-- Blood type -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Blood type</span>
-        <select class="prof-field" id="hd-i-blood" style="max-width:110px" onchange="onHdBloodChange()">
-          <option value="">—</option>
+        <select class="prof-chip" id="hd-i-blood" onchange="onHdBloodChange()">
+          <option value="">Select</option>
           <option>A+</option><option>A-</option><option selected>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
         </select>
       </div>
       <!-- Wheelchair -->
-      <div style="padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Wheelchair access</span>
-        <select class="prof-field" id="hd-i-wheelchair" style="max-width:110px" onchange="onHdWheelchairChange()">
+        <select class="prof-chip" id="hd-i-wheelchair" onchange="onHdWheelchairChange()">
           <option selected>No</option><option>Yes</option>
         </select>
       </div>
@@ -927,23 +939,23 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Emergency Contact</p>
       </div>
       <!-- Name -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <label for="ec-i-name" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Name</span>
-        <input class="prof-field" id="ec-i-name" type="text" value="Mehmet Sarper" placeholder="—" style="max-width:220px" onblur="onEcFieldBlur()">
-      </div>
+        <input class="prof-text" id="ec-i-name" type="text" value="Mehmet Sarper" placeholder="Add name" onblur="onEcFieldBlur()">
+      </label>
       <!-- Relationship -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Relationship</span>
-        <select class="prof-field" id="ec-i-rel" onchange="onEcFieldBlur()">
-          <option value="">—</option>
+        <select class="prof-chip" id="ec-i-rel" onchange="onEcFieldBlur()">
+          <option value="">Select</option>
           <option>Father</option><option>Mother</option><option>Spouse</option><option>Partner</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Carer</option><option>Other</option>
         </select>
       </div>
       <!-- Phone + Call -->
-      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Phone</span>
         <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;justify-content:flex-end">
-          <input class="prof-field" id="ec-i-phone" type="tel" inputmode="tel" autocomplete="tel" value="+90 532 111 2233" placeholder="—" style="max-width:170px" onblur="onEcFieldBlur()">
+          <input class="prof-text" id="ec-i-phone" type="tel" inputmode="tel" autocomplete="tel" value="+90 532 111 2233" placeholder="Add phone" style="width:auto;max-width:none;flex:1" onblur="onEcFieldBlur()">
           <button id="ec-call-btn" onclick="onEcCall()" aria-label="Call emergency contact" style="background:var(--color-orange-tint);border:none;border-radius:100px;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--on-orange-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
             <span style="font-size:12px;font-weight:600;color:var(--on-orange-tint)">Call</span>
@@ -3824,13 +3836,34 @@ function toggleCardEdit(card){
 
 // ── Always-on field handlers (Health Details + Emergency Contact) ────────
 function onHdTextBlur(){ syncProfileHeaderName(); saveCurrentProfile(); updateProfileInviteVisibility(); }
-function onHdDobChange(){ saveCurrentProfile(); }
-function onHdSexChange(){ applyPregnancyVisibility(); saveCurrentProfile(); }
+function onHdDobChange(){ syncDobDisplay(); saveCurrentProfile(); }
+function onHdSexChange(){ applyPregnancyVisibility(); syncChipMuted(document.getElementById('hd-i-sex')); saveCurrentProfile(); }
 function onHdCityBlur(){ syncProfileHeaderLocation(); saveCurrentProfile(); }
-function onHdCountryChange(){ syncProfileHeaderLocation(); saveCurrentProfile(); }
-function onHdBloodChange(){ saveCurrentProfile(); }
+function onHdCountryChange(){ syncProfileHeaderLocation(); syncChipMuted(document.getElementById('hd-i-country')); saveCurrentProfile(); }
+function onHdBloodChange(){ syncChipMuted(document.getElementById('hd-i-blood')); saveCurrentProfile(); }
 function onHdWheelchairChange(){ saveCurrentProfile(); }
-function onEcFieldBlur(){ saveCurrentProfile(); }
+function onEcFieldBlur(){ syncChipMuted(document.getElementById('ec-i-rel')); saveCurrentProfile(); }
+// Paint the visible DOB text from the native date input's value.
+function syncDobDisplay(){
+  const inp=document.getElementById('hd-i-dob');
+  const txt=document.getElementById('hd-i-dob-display');
+  if(!inp||!txt) return;
+  const v=(inp.value||'').trim();
+  if(!v){ txt.textContent='Add date'; txt.classList.add('is-empty'); return; }
+  const m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m){ txt.textContent=v; txt.classList.remove('is-empty'); return; }
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  txt.textContent=`${months[+m[2]-1]} ${+m[3]}, ${m[1]}`;
+  txt.classList.remove('is-empty');
+}
+// Mute a dropdown chip's text when it's on the placeholder value ("").
+function syncChipMuted(el){
+  if(!el) return;
+  if(!el.value) el.classList.add('is-empty'); else el.classList.remove('is-empty');
+}
+function refreshAllChipMuted(){
+  ['hd-i-sex','hd-i-country','hd-i-blood','ec-i-rel'].forEach(id=>syncChipMuted(document.getElementById(id)));
+}
 function onEcCall(){
   const phone=(document.getElementById('ec-i-phone')||{}).value||'';
   const digits=phone.replace(/[^\d+]/g,'');
@@ -3906,16 +3939,11 @@ function applyPregnancyVisibility(){
   const hide=sex==='male';
   row.style.display=hide?'none':'flex';
   if(hide){
-    const cb=document.getElementById('hd-i-pregnant');
-    if(cb) cb.checked=false;
-    const lbl=document.getElementById('hd-v-pregnant');
-    if(lbl) lbl.textContent='No';
+    const sel=document.getElementById('hd-i-pregnant');
+    if(sel) sel.value='false';
   }
 }
-function onPregnantToggle(){
-  const cb=document.getElementById('hd-i-pregnant');
-  const lbl=document.getElementById('hd-v-pregnant');
-  if(lbl) lbl.textContent=cb&&cb.checked?'Yes':'No';
+function onPregnantChange(){
   if(typeof saveCurrentProfile==='function') saveCurrentProfile();
 }
 
@@ -4159,7 +4187,7 @@ function loadSavedProfile(){
   try { return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null'); } catch { return null; }
 }
 function saveCurrentProfile(){
-  const pregCb=document.getElementById('hd-i-pregnant');
+  const pregSel=document.getElementById('hd-i-pregnant');
   const countrySel=document.getElementById('hd-i-country');
   const homeCountryCode=countrySel?countrySel.value||'':'';
   // Preserve any pre-existing legacy "loc" string so old-profile shape is not broken.
@@ -4177,7 +4205,7 @@ function saveCurrentProfile(){
     midId:getVal('mid-v-id'),
     allergies:[...document.querySelectorAll('#allergy-chips .allergy-chip')].map(c=>c.childNodes[0]?.textContent.trim()).filter(Boolean),
     currentMedications:[...document.querySelectorAll('#current-med-chips .current-med-chip')].map(c=>c.childNodes[0]?.textContent.trim()).filter(Boolean),
-    isPregnant:!!(pregCb&&pregCb.checked),
+    isPregnant:!!(pregSel&&pregSel.value==='true'),
     photo:(document.getElementById('profile-photo')||{}).src||''
   };
   if(legacyLoc) data.loc=legacyLoc;
@@ -4228,10 +4256,10 @@ function clearProfileToEmpty(){
   if(medsWrap){
     [...medsWrap.querySelectorAll('.current-med-chip')].forEach(c=>c.remove());
   }
-  const pregCb=document.getElementById('hd-i-pregnant');
-  if(pregCb) pregCb.checked=false;
-  const pregLbl=document.getElementById('hd-v-pregnant');
-  if(pregLbl) pregLbl.textContent='No';
+  const pregSel=document.getElementById('hd-i-pregnant');
+  if(pregSel) pregSel.value='false';
+  syncDobDisplay();
+  refreshAllChipMuted();
   applyPregnancyVisibility();
 }
 // Convert legacy DOB strings ("16 Mar 1990", "3/16/1990") to ISO "YYYY-MM-DD"
@@ -4291,9 +4319,10 @@ function applySavedProfile(saved){
     const input=document.getElementById('current-med-input');
     saved.currentMedications.forEach(m=>{if(input){input.value=m;addCurrentMed();}});
   }
-  const pregCb=document.getElementById('hd-i-pregnant');
-  const pregLbl=document.getElementById('hd-v-pregnant');
-  if(pregCb){ pregCb.checked=!!saved.isPregnant; if(pregLbl) pregLbl.textContent=pregCb.checked?'Yes':'No'; }
+  const pregSel=document.getElementById('hd-i-pregnant');
+  if(pregSel) pregSel.value=saved.isPregnant?'true':'false';
+  syncDobDisplay();
+  refreshAllChipMuted();
   applyPregnancyVisibility();
   updateProfileInviteVisibility();
 }
