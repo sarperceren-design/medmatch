@@ -1943,12 +1943,70 @@ const BRAND_MAP={
   'gravol':'diphenhydramine hydrochloride',
 };
 
+// Damerau-Levenshtein edit distance: counts insertions, deletions,
+// substitutions, AND adjacent transpositions as single operations. This
+// is what powers our typo tolerance — without the transposition rule,
+// "ibuprofne" → "ibuprofen" costs 2 substitutions instead of 1 swap.
+function damerauLevenshtein(a, b){
+  const m=a.length, n=b.length;
+  if(!m) return n;
+  if(!n) return m;
+  const d=Array.from({length:m+1}, ()=> new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) d[i][0]=i;
+  for(let j=0;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const cost=a.charCodeAt(i-1)===b.charCodeAt(j-1) ? 0 : 1;
+      let best=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+cost);
+      if(i>1 && j>1 && a.charCodeAt(i-1)===b.charCodeAt(j-2) && a.charCodeAt(i-2)===b.charCodeAt(j-1)){
+        best=Math.min(best, d[i-2][j-2]+1);
+      }
+      d[i][j]=best;
+    }
+  }
+  return d[m][n];
+}
+
+// Find the closest BRAND_MAP key to `query` within an acceptable edit distance.
+// Returns the resolved INN if confident, else null (caller falls through to AI).
+// The threshold scales with query length:
+//   <5 chars  → no fuzzy (too ambiguous; "tums" vs "toms" would false-positive)
+//   5–7 chars → 1 typo allowed
+//   ≥8 chars  → 2 typos allowed
+// Length-difference pruning makes the scan O(keys) cheap in practice.
+function fuzzyMatchBrand(query){
+  const q=query.toLowerCase().trim();
+  const qLen=q.length;
+  const maxDist = qLen>=8 ? 2 : qLen>=5 ? 1 : 0;
+  if(maxDist===0) return null;
+  let bestInn=null, bestDist=Infinity;
+  for(const [brand, inn] of Object.entries(BRAND_MAP)){
+    // Edit distance can't be smaller than the difference in string lengths,
+    // so skip keys that are obviously too far off.
+    if(Math.abs(brand.length-qLen)>maxDist) continue;
+    const d=damerauLevenshtein(q, brand);
+    if(d<bestDist){
+      bestDist=d;
+      bestInn=inn;
+      if(d===0) break;
+    }
+  }
+  return bestDist<=maxDist ? bestInn : null;
+}
+
 function resolveSearchTerm(v){
   const lower=v.toLowerCase().trim();
-  // Check if it's a known brand name
+  // 1. Exact / substring match — covers known brands ("advil"), category
+  //    phrases ("birth control"), and the explicit typo entries.
   for(const [brand,inn] of Object.entries(BRAND_MAP)){
     if(lower.includes(brand)) return inn;
   }
+  // 2. Fuzzy fallback — catches any typo within edit-distance threshold
+  //    (volteren→voltaren, ibuprofne→ibuprofen, amoxiccilin→amoxicillin)
+  //    without needing a hardcoded list. If confidence is too low, return
+  //    the raw query so handleSearch falls through to the AI Worker.
+  const fuzzy=fuzzyMatchBrand(lower);
+  if(fuzzy) return fuzzy;
   return lower;
 }
 
