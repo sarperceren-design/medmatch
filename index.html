@@ -255,21 +255,21 @@ input[type=text]:focus{border-color:#4F6EF7}
 
 .prof-val{font-size:15px;font-weight:500;color:var(--text-primary)}
 .prof-inp{width:100%;padding:8px 12px;font-size:14px;border-radius:10px;border:1.5px solid var(--color-purple);background:var(--surface-input);color:var(--text-primary);outline:none;font-family:inherit}
-/* iOS Settings — chrome-less text field (First/Last/City, EC Name, EC Phone). */
-.prof-text{-webkit-appearance:none;appearance:none;border:0;background:transparent;padding:7px 0;font-size:14px;font-family:inherit;color:var(--text-primary);outline:none;text-align:right;width:60%;max-width:60%;min-width:0;box-sizing:border-box}
-.prof-text::placeholder{color:var(--text-disabled)}
-/* iOS Settings — chip style. Every chip (dropdown + DOB) is exactly 140px wide. */
-.prof-chip{-webkit-appearance:none;appearance:none;width:140px;padding:7px 10px;font-size:14px;font-family:inherit;border-radius:8px;border:1px solid var(--divider);background:var(--surface-input);color:var(--text-primary);outline:none;box-sizing:border-box;min-height:34px;text-align:right;transition:border-color .15s}
-.prof-chip:focus{border-color:var(--color-purple)}
-.prof-chip::placeholder{color:var(--text-disabled)}
-select.prof-chip{text-align-last:right;padding-right:26px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
-select.prof-chip.is-empty{color:var(--text-disabled)}
-/* DOB chip wrapper: native <input type="date"> overlays invisibly to trigger the picker;
-   visible text is a sibling span so we can show "Add date" in the empty state. */
-.prof-chip-date{display:inline-flex;align-items:center;justify-content:flex-end;position:relative;cursor:pointer;overflow:hidden}
-.prof-chip-date input[type="date"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;margin:0;background:transparent;font-family:inherit;color:var(--text-primary)}
-.prof-chip-date-text{font-size:14px;color:var(--text-primary);pointer-events:none;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prof-chip-date-text.is-empty{color:var(--text-disabled)}
+/* Apple Health — Health Details / Emergency Contact rows.
+   Display mode: every value is plain right-aligned text. No chips anywhere.
+   Edit mode: chips only on pickers (DOB, Sex, Country, Blood, Wheelchair, Pregnant, Relationship);
+   plain text inputs (no chrome) on everything else. Chips have intrinsic width. */
+.ah-label{font-size:15px;color:var(--text-primary);flex-shrink:0}
+.ah-disp{font-size:15px;color:var(--text-primary);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ah-disp.empty{color:var(--text-disabled);font-style:italic}
+.ah-text{-webkit-appearance:none;appearance:none;border:0;background:transparent;padding:0;font-size:15px;font-family:inherit;color:var(--text-primary);outline:none;text-align:right;min-width:0;box-sizing:border-box;flex:1}
+.ah-text::placeholder{color:var(--text-disabled)}
+.ah-chip{-webkit-appearance:none;appearance:none;padding:5px 10px;font-size:14px;font-family:inherit;border-radius:8px;border:1px solid var(--divider);background:var(--surface-input);color:var(--text-primary);outline:none;box-sizing:border-box;min-height:32px;text-align:right;transition:border-color .15s}
+.ah-chip:focus{border-color:var(--color-purple)}
+select.ah-chip{text-align-last:right;padding-right:24px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
+input.ah-chip[type="date"]{padding:5px 8px}
+input.ah-chip[type="date"]::-webkit-date-and-time-value{text-align:right}
+input.ah-chip[type="date"]::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer;margin-left:4px}
 
 /* Tip bar — teal, distinct from orange warnings and purple search cards */
 .tipbar{background:var(--color-info-tint);border-top:1px solid var(--color-info);padding:10px 20px;position:absolute;bottom:0;left:0;right:0;z-index:5}
@@ -803,37 +803,44 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
     <!-- ── HEALTH DETAILS ── -->
     <div style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:28px;background:var(--color-purple-tint);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;background:var(--color-purple-tint);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Health Details</p>
+            <p style="font-size:11px;color:var(--text-disabled);margin-top:1px">Used to personalise safety warnings</p>
+          </div>
         </div>
-        <div>
-          <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Health Details</p>
-          <p style="font-size:11px;color:var(--text-disabled);margin-top:1px">Used to personalise safety warnings</p>
-        </div>
+        <button onclick="toggleCardEdit('hd')" style="display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:0">
+          <svg id="hd-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="hd-btn-label" style="font-size:13px;font-weight:600;color:var(--color-purple)">Edit</span>
+        </button>
       </div>
       <!-- First name -->
-      <label for="hd-i-first" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">First name</span>
-        <input class="prof-text" id="hd-i-first" type="text" value="Cara" placeholder="Add first name" onblur="onHdTextBlur()">
-      </label>
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
+        <span class="ah-label">First name</span>
+        <span class="ah-disp" id="hd-v-first">Cara</span>
+        <input class="ah-text" id="hd-i-first" type="text" value="Cara" placeholder="First name" style="display:none">
+      </div>
       <!-- Last name -->
-      <label for="hd-i-last" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Last name</span>
-        <input class="prof-text" id="hd-i-last" type="text" value="Sarper" placeholder="Add last name" onblur="onHdTextBlur()">
-      </label>
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
+        <span class="ah-label">Last name</span>
+        <span class="ah-disp" id="hd-v-last">Sarper</span>
+        <input class="ah-text" id="hd-i-last" type="text" value="Sarper" placeholder="Last name" style="display:none">
+      </div>
       <!-- Date of birth -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Date of birth</span>
-        <label class="prof-chip prof-chip-date" for="hd-i-dob">
-          <input type="date" id="hd-i-dob" value="1990-03-16" onchange="onHdDobChange()">
-          <span class="prof-chip-date-text" id="hd-i-dob-display">Add date</span>
-        </label>
+        <span class="ah-label">Date of birth</span>
+        <span class="ah-disp" id="hd-v-dob">Mar 16, 1990</span>
+        <input class="ah-chip" id="hd-i-dob" type="date" value="1990-03-16" style="display:none">
       </div>
       <!-- Sex -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Sex</span>
-        <select class="prof-chip" id="hd-i-sex" onchange="onHdSexChange()">
+        <span class="ah-label">Sex</span>
+        <span class="ah-disp" id="hd-v-sex">Female</span>
+        <select class="ah-chip" id="hd-i-sex" style="display:none">
           <option value="">Select</option>
           <option value="Female" selected>Female</option>
           <option value="Male">Male</option>
@@ -842,36 +849,41 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       </div>
       <!-- Pregnant — only shown when sex is female or unspecified -->
       <div id="hd-row-pregnant" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Pregnant</span>
-        <select class="prof-chip" id="hd-i-pregnant" onchange="onPregnantChange()">
+        <span class="ah-label">Pregnant</span>
+        <span class="ah-disp" id="hd-v-pregnant">No</span>
+        <select class="ah-chip" id="hd-i-pregnant" style="display:none">
           <option value="false" selected>No</option>
           <option value="true">Yes</option>
         </select>
       </div>
       <!-- City -->
-      <label for="hd-i-city" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">City</span>
-        <input class="prof-text" id="hd-i-city" type="text" value="" placeholder="Add city" onblur="onHdCityBlur()">
-      </label>
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
+        <span class="ah-label">City</span>
+        <span class="ah-disp" id="hd-v-city"></span>
+        <input class="ah-text" id="hd-i-city" type="text" value="" placeholder="City" style="display:none">
+      </div>
       <!-- Country -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Country</span>
-        <select class="prof-chip" id="hd-i-country" onchange="onHdCountryChange()">
+        <span class="ah-label">Country</span>
+        <span class="ah-disp" id="hd-v-country"></span>
+        <select class="ah-chip" id="hd-i-country" style="display:none">
           <option value="">Select country</option>
         </select>
       </div>
       <!-- Blood type -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Blood type</span>
-        <select class="prof-chip" id="hd-i-blood" onchange="onHdBloodChange()">
+        <span class="ah-label">Blood type</span>
+        <span class="ah-disp" id="hd-v-blood">B+</span>
+        <select class="ah-chip" id="hd-i-blood" style="display:none">
           <option value="">Select</option>
           <option>A+</option><option>A-</option><option selected>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
         </select>
       </div>
       <!-- Wheelchair -->
       <div style="padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Wheelchair access</span>
-        <select class="prof-chip" id="hd-i-wheelchair" onchange="onHdWheelchairChange()">
+        <span class="ah-label">Wheelchair access</span>
+        <span class="ah-disp" id="hd-v-wheelchair">No</span>
+        <select class="ah-chip" id="hd-i-wheelchair" style="display:none">
           <option selected>No</option><option>Yes</option>
         </select>
       </div>
@@ -932,30 +944,39 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
     <!-- ── EMERGENCY CONTACT ── -->
     <div style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:28px;background:var(--color-orange-tint);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-orange-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+      <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;background:var(--color-orange-tint);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-orange-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          </div>
+          <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Emergency Contact</p>
         </div>
-        <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Emergency Contact</p>
+        <button onclick="toggleCardEdit('ec')" style="display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:0">
+          <svg id="ec-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span id="ec-btn-label" style="font-size:13px;font-weight:600;color:var(--color-purple)">Edit</span>
+        </button>
       </div>
       <!-- Name -->
-      <label for="ec-i-name" style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;cursor:text">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Name</span>
-        <input class="prof-text" id="ec-i-name" type="text" value="Mehmet Sarper" placeholder="Add name" onblur="onEcFieldBlur()">
-      </label>
+      <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
+        <span class="ah-label">Name</span>
+        <span class="ah-disp" id="ec-v-name">Mehmet Sarper</span>
+        <input class="ah-text" id="ec-i-name" type="text" value="Mehmet Sarper" placeholder="Name" style="display:none">
+      </div>
       <!-- Relationship -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Relationship</span>
-        <select class="prof-chip" id="ec-i-rel" onchange="onEcFieldBlur()">
+        <span class="ah-label">Relationship</span>
+        <span class="ah-disp" id="ec-v-rel">Father</span>
+        <select class="ah-chip" id="ec-i-rel" style="display:none">
           <option value="">Select</option>
           <option>Father</option><option>Mother</option><option>Spouse</option><option>Partner</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Carer</option><option>Other</option>
         </select>
       </div>
       <!-- Phone + Call -->
       <div style="padding:10px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px">
-        <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Phone</span>
+        <span class="ah-label">Phone</span>
         <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;justify-content:flex-end">
-          <input class="prof-text" id="ec-i-phone" type="tel" inputmode="tel" autocomplete="tel" value="+90 532 111 2233" placeholder="Add phone" style="width:auto;max-width:none;flex:1" onblur="onEcFieldBlur()">
+          <span class="ah-disp" id="ec-v-phone">+90 532 111 2233</span>
+          <input class="ah-text" id="ec-i-phone" type="tel" inputmode="tel" autocomplete="tel" value="+90 532 111 2233" placeholder="Phone" style="display:none">
           <button id="ec-call-btn" onclick="onEcCall()" aria-label="Call emergency contact" style="background:var(--color-orange-tint);border:none;border-radius:100px;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--on-orange-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 2.98 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
             <span style="font-size:12px;font-weight:600;color:var(--on-orange-tint)">Call</span>
@@ -3817,52 +3838,99 @@ function initMapboxMap(){
   });
 }
 
-// ── Per-card editing ─────────────────────────────
-// Health Details and Emergency Contact use always-on native fields (no toggle).
-// Medical ID still uses the Edit/Done toggle pattern below.
+// ── Per-card editing (Health Details / Emergency Contact / Medical ID) ───
+// All three use the Edit/Done toggle pattern. Saving happens on Done.
 const cardState={};
+const HD_FIELD_IDS=['first','last','dob','sex','pregnant','city','country','blood','wheelchair'];
+const EC_FIELD_IDS=['name','rel','phone'];
 function toggleCardEdit(card){
-  if(card!=='mid') return;
   const editing=!cardState[card];
   cardState[card]=editing;
   const icon=document.getElementById(card+'-icon');
   const label=document.getElementById(card+'-btn-label');
   if(icon) icon.style.stroke=editing?'#EF4444':'#4F6EF7';
   if(label){ label.textContent=editing?'Done':'Edit'; label.style.color=editing?'#EF4444':'#4F6EF7'; }
-  const v=document.getElementById('mid-v-id'),i=document.getElementById('mid-i-id');
-  if(editing){i.value=v.textContent.trim();v.style.display='none';i.style.display='block';}
-  else{if(i.value.trim())v.textContent=i.value.trim();v.style.display='';i.style.display='none';}
+  if(card==='hd'){
+    HD_FIELD_IDS.forEach(f=>{
+      const disp=document.getElementById('hd-v-'+f);
+      const inp=document.getElementById('hd-i-'+f);
+      if(disp) disp.style.display=editing?'none':'';
+      if(inp) inp.style.display=editing?'':'none';
+    });
+    if(!editing){
+      refreshHdDisplays();
+      applyPregnancyVisibility();
+      syncProfileHeaderName();
+      syncProfileHeaderLocation();
+      updateProfileInviteVisibility();
+      saveCurrentProfile();
+    }
+    return;
+  }
+  if(card==='ec'){
+    EC_FIELD_IDS.forEach(f=>{
+      const disp=document.getElementById('ec-v-'+f);
+      const inp=document.getElementById('ec-i-'+f);
+      if(disp) disp.style.display=editing?'none':'';
+      if(inp) inp.style.display=editing?'':'none';
+    });
+    if(!editing){
+      refreshEcDisplays();
+      saveCurrentProfile();
+    }
+    return;
+  }
+  if(card==='mid'){
+    const v=document.getElementById('mid-v-id'),i=document.getElementById('mid-i-id');
+    if(editing){i.value=v.textContent.trim();v.style.display='none';i.style.display='block';}
+    else{if(i.value.trim())v.textContent=i.value.trim();v.style.display='';i.style.display='none';saveCurrentProfile();}
+  }
 }
 
-// ── Always-on field handlers (Health Details + Emergency Contact) ────────
-function onHdTextBlur(){ syncProfileHeaderName(); saveCurrentProfile(); updateProfileInviteVisibility(); }
-function onHdDobChange(){ syncDobDisplay(); saveCurrentProfile(); }
-function onHdSexChange(){ applyPregnancyVisibility(); syncChipMuted(document.getElementById('hd-i-sex')); saveCurrentProfile(); }
-function onHdCityBlur(){ syncProfileHeaderLocation(); saveCurrentProfile(); }
-function onHdCountryChange(){ syncProfileHeaderLocation(); syncChipMuted(document.getElementById('hd-i-country')); saveCurrentProfile(); }
-function onHdBloodChange(){ syncChipMuted(document.getElementById('hd-i-blood')); saveCurrentProfile(); }
-function onHdWheelchairChange(){ saveCurrentProfile(); }
-function onEcFieldBlur(){ syncChipMuted(document.getElementById('ec-i-rel')); saveCurrentProfile(); }
-// Paint the visible DOB text from the native date input's value.
-function syncDobDisplay(){
-  const inp=document.getElementById('hd-i-dob');
-  const txt=document.getElementById('hd-i-dob-display');
-  if(!inp||!txt) return;
-  const v=(inp.value||'').trim();
-  if(!v){ txt.textContent='Add date'; txt.classList.add('is-empty'); return; }
-  const m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(!m){ txt.textContent=v; txt.classList.remove('is-empty'); return; }
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  txt.textContent=`${months[+m[2]-1]} ${+m[3]}, ${m[1]}`;
-  txt.classList.remove('is-empty');
-}
-// Mute a dropdown chip's text when it's on the placeholder value ("").
-function syncChipMuted(el){
+// ── Apple Health display helpers ─────────────────────────────────────────
+// Render a right-aligned value as primary text when filled, or an italic
+// muted placeholder when empty. Used by both Health Details and Emergency Contact.
+function setDispValue(id, text, emptyPlaceholder){
+  const el=document.getElementById(id);
   if(!el) return;
-  if(!el.value) el.classList.add('is-empty'); else el.classList.remove('is-empty');
+  if(text){ el.textContent=text; el.classList.remove('empty'); }
+  else { el.textContent=emptyPlaceholder||''; el.classList.add('empty'); }
 }
-function refreshAllChipMuted(){
-  ['hd-i-sex','hd-i-country','hd-i-blood','ec-i-rel'].forEach(id=>syncChipMuted(document.getElementById(id)));
+// ISO "YYYY-MM-DD" → "Mar 16, 1990". Non-ISO strings pass through.
+function formatDobDisplay(iso){
+  const s=String(iso||'').trim();
+  if(!s) return '';
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return s;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[+m[2]-1]} ${+m[3]}, ${m[1]}`;
+}
+// Country ISO code → "🇨🇦 Canada" (flag + name), matching the Travel Settings pattern.
+function formatCountryDisplay(code){
+  if(!code) return '';
+  const sel=document.getElementById('hd-i-country');
+  if(!sel) return code;
+  const opt=[...sel.options].find(o=>o.value===code);
+  return opt?(opt.textContent||'').trim():code;
+}
+function refreshHdDisplays(){
+  setDispValue('hd-v-first', inpVal('hd-i-first'), 'Add first name');
+  setDispValue('hd-v-last', inpVal('hd-i-last'), 'Add last name');
+  setDispValue('hd-v-dob', formatDobDisplay(inpVal('hd-i-dob')), 'Add date');
+  setDispValue('hd-v-sex', inpVal('hd-i-sex'), 'Select');
+  const preg=(document.getElementById('hd-i-pregnant')||{}).value||'false';
+  setDispValue('hd-v-pregnant', preg==='true'?'Yes':'No');
+  setDispValue('hd-v-city', inpVal('hd-i-city'), 'Add city');
+  const countrySel=document.getElementById('hd-i-country');
+  setDispValue('hd-v-country', formatCountryDisplay(countrySel?countrySel.value:''), 'Select country');
+  setDispValue('hd-v-blood', inpVal('hd-i-blood'), 'Select');
+  const wc=inpVal('hd-i-wheelchair');
+  setDispValue('hd-v-wheelchair', wc==='Yes'?'Yes':'No');
+}
+function refreshEcDisplays(){
+  setDispValue('ec-v-name', inpVal('ec-i-name'), 'Add name');
+  setDispValue('ec-v-rel', inpVal('ec-i-rel'), 'Select');
+  setDispValue('ec-v-phone', inpVal('ec-i-phone'), 'Add phone');
 }
 function onEcCall(){
   const phone=(document.getElementById('ec-i-phone')||{}).value||'';
@@ -3941,10 +4009,9 @@ function applyPregnancyVisibility(){
   if(hide){
     const sel=document.getElementById('hd-i-pregnant');
     if(sel) sel.value='false';
+    const disp=document.getElementById('hd-v-pregnant');
+    if(disp){ disp.textContent='No'; disp.classList.remove('empty'); }
   }
-}
-function onPregnantChange(){
-  if(typeof saveCurrentProfile==='function') saveCurrentProfile();
 }
 
 // ── Allergy families for partial-match cross-check ──────────────────────
@@ -4258,8 +4325,8 @@ function clearProfileToEmpty(){
   }
   const pregSel=document.getElementById('hd-i-pregnant');
   if(pregSel) pregSel.value='false';
-  syncDobDisplay();
-  refreshAllChipMuted();
+  refreshHdDisplays();
+  refreshEcDisplays();
   applyPregnancyVisibility();
 }
 // Convert legacy DOB strings ("16 Mar 1990", "3/16/1990") to ISO "YYYY-MM-DD"
@@ -4321,8 +4388,8 @@ function applySavedProfile(saved){
   }
   const pregSel=document.getElementById('hd-i-pregnant');
   if(pregSel) pregSel.value=saved.isPregnant?'true':'false';
-  syncDobDisplay();
-  refreshAllChipMuted();
+  refreshHdDisplays();
+  refreshEcDisplays();
   applyPregnancyVisibility();
   updateProfileInviteVisibility();
 }
@@ -4356,7 +4423,7 @@ function populateHomeCountryOptions(){
     .filter(c=>!!COUNTRY_CODE_MAP[c.n])
     .map(c=>({code:COUNTRY_CODE_MAP[c.n], name:c.n, flag:c.f}))
     .sort((a,b)=>a.name.localeCompare(b.name));
-  const html=['<option value="">—</option>']
+  const html=['<option value="">Select country</option>']
     .concat(opts.map(o=>`<option value="${o.code}" data-name="${o.name}">${o.flag} ${o.name}</option>`)).join('');
   sel.innerHTML=html;
   sel.dataset.populated='1';
@@ -4372,7 +4439,8 @@ function initProfile(){
     clearProfileToEmpty();
     updateProfileInviteVisibility();
   }
-  // Medical ID retains the Edit/Done toggle; wrap it to persist on Done.
+  // Medical ID's "Not set" placeholder is still textContent-based; wrap the
+  // toggle so it's cleared on Edit and restored on Done when empty.
   const origToggle=window.toggleCardEdit;
   if(typeof origToggle==='function'){
     window.toggleCardEdit=function(card){
@@ -4386,7 +4454,6 @@ function initProfile(){
         if(!cardState[card]){
           const vM=document.getElementById('mid-v-id');
           if(vM && !(vM.textContent||'').trim()) setEmptyField('mid-v-id');
-          saveCurrentProfile();
         }
         return;
       }
