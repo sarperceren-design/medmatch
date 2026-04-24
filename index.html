@@ -271,6 +271,8 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
 /* Allergy chips */
 .allergy-chip{background:var(--color-purple-tint);color:var(--on-purple-tint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid var(--color-purple-light);display:flex;align-items:center;gap:6px}
+/* Current-medication chips */
+.current-med-chip{background:var(--color-purple-tint);color:var(--on-purple-tint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid var(--color-purple-light);display:flex;align-items:center;gap:6px}
 
 /* On a real mobile or tablet — hide the prototype frame and fill the screen */
 @media (max-width: 1024px) {
@@ -596,6 +598,9 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         </div>
       </div>
 
+      <!-- Safety banners (contraindication + allergy) — populated by goToLiveDetail() -->
+      <div id="d-safety-banners"></div>
+
       <!-- Ingredient Comparison card -->
       <div style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden">
         <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:8px">
@@ -822,6 +827,14 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
         <span class="prof-val" id="hd-v-sex" style="font-size:15px;font-weight:500;color:var(--text-primary)">Female</span>
         <input class="prof-inp" id="hd-i-sex" value="Female" style="display:none;width:140px;text-align:right">
       </div>
+      <!-- Pregnant — only shown when sex is female or unspecified -->
+      <div id="hd-row-pregnant" style="padding:13px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;color:var(--text-secondary)">Pregnant</span>
+        <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="hd-i-pregnant" onchange="onPregnantToggle()" style="width:18px;height:18px;accent-color:var(--color-purple);cursor:pointer">
+          <span id="hd-v-pregnant" style="font-size:15px;font-weight:500;color:var(--text-primary)">No</span>
+        </label>
+      </div>
       <!-- Location -->
       <div style="padding:13px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;gap:12px">
         <span style="font-size:13px;color:var(--text-secondary);flex-shrink:0">Location</span>
@@ -869,6 +882,31 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
             <input type="text" id="allergy-input" placeholder="e.g. Aspirin" style="padding:5px 10px;font-size:13px;border-radius:100px;width:110px" onkeydown="if(event.key==='Enter')addAllergy()">
             <button onclick="addAllergy()" style="background:#2563EB;color:white;border:none;border-radius:100px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer">Add</button>
             <button onclick="cancelAllergyInput()" style="background:var(--surface-input);color:var(--text-secondary);border:none;border-radius:100px;padding:5px 10px;font-size:12px;cursor:pointer">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CURRENT MEDICATIONS (chip pattern, always-live ×) ── -->
+    <div style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px">
+      <div style="padding:14px 18px;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;background:var(--color-purple-tint);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-purple-tint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 L3.5 13.5 a5 5 0 0 1 7.07-7.07 L17.5 13.5 a5 5 0 0 1-7.07 7.07z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>
+        </div>
+        <div>
+          <p style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary)">Current medications</p>
+          <p style="font-size:11px;color:var(--text-disabled);margin-top:1px">Checked for interactions against all match results</p>
+        </div>
+      </div>
+      <div style="padding:14px 18px">
+        <div id="current-med-chips" style="display:flex;flex-wrap:wrap;gap:8px">
+          <span id="add-current-med-btn" style="background:var(--surface-input);color:var(--text-secondary);font-size:13px;padding:6px 12px;border-radius:100px;border:1px solid var(--border-card);display:flex;align-items:center;gap:4px;cursor:pointer" onclick="showCurrentMedInput()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          </span>
+          <div id="current-med-input-wrap" style="display:none;align-items:center;gap:6px">
+            <input type="text" id="current-med-input" placeholder="e.g. Warfarin" style="padding:5px 10px;font-size:13px;border-radius:100px;width:140px" onkeydown="if(event.key==='Enter')addCurrentMed()">
+            <button onclick="addCurrentMed()" style="background:#2563EB;color:white;border:none;border-radius:100px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer">Add</button>
+            <button onclick="cancelCurrentMedInput()" style="background:var(--surface-input);color:var(--text-secondary);border:none;border-radius:100px;padding:5px 10px;font-size:12px;cursor:pointer">Cancel</button>
           </div>
         </div>
       </div>
@@ -937,14 +975,10 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
           <span id="mid-btn-label" style="font-size:13px;font-weight:600;color:var(--color-purple)">Edit</span>
         </button>
       </div>
-      <div style="padding:13px 18px;border-bottom:1px solid var(--divider)">
+      <div style="padding:13px 18px">
         <p style="font-size:11px;font-weight:600;color:var(--text-disabled);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Health Record ID</p>
         <p class="prof-val" id="mid-v-id" style="font-size:15px;font-weight:500;color:var(--text-primary)">BC-2024-88291</p>
         <input class="prof-inp" id="mid-i-id" value="BC-2024-88291" style="display:none">
-      </div>
-      <div style="background:var(--color-teal-tint);border-top:1px solid var(--color-teal-light);padding:12px 18px;display:flex;align-items:center;gap:8px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        <p style="font-size:12px;color:var(--on-teal-tint);font-weight:600">Verified by MedMatch · Last updated 12 Jan 2026</p>
       </div>
     </div>
 
@@ -2564,6 +2598,57 @@ function safetyText(med, score){
   return `✗ Low match — consult pharmacist`;
 }
 
+function warningRow(w){
+  const full=String(w==null?'':w);
+  const txt=full.length>120?full.slice(0,120)+'…':full;
+  return `<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px">${txt}</p></div>`;
+}
+
+function renderWarnings(raw){
+  const host=document.getElementById('d-warnings');
+  if(!host) return;
+  const warnings=Array.isArray(raw)?raw.filter(w=>w!=null&&String(w).trim()):[];
+  if(!warnings.length){
+    host.innerHTML=`<div style="background:var(--surface-input);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px">
+      <div style="width:44px;height:44px;background:var(--surface-card);border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </div>
+      <p style="font-size:14px;font-weight:600;color:var(--text-primary);line-height:1.35;margin:0">No specific warnings on file for this medication.</p>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:0">This does not mean it is safe for you. Always verify with a pharmacist before purchasing, especially if you are pregnant, taking other medications, or have any medical conditions.</p>
+    </div>`;
+    return;
+  }
+  if(warnings.length<=3){
+    host.innerHTML=warnings.map(warningRow).join('');
+    return;
+  }
+  const firstThree=warnings.slice(0,3).map(warningRow).join('');
+  const rest=warnings.slice(3).map(warningRow).join('');
+  const total=warnings.length;
+  host.innerHTML=`${firstThree}
+    <div id="d-warnings-rest" style="display:none;flex-direction:column;gap:10px">${rest}</div>
+    <button type="button" id="d-warnings-toggle" onclick="toggleAllWarnings(${total})" style="align-self:flex-start;background:transparent;border:none;padding:4px 0;margin-top:2px;font-size:13px;font-weight:600;color:var(--color-purple);cursor:pointer;display:inline-flex;align-items:center;gap:4px">
+      Show all ${total} warnings
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>`;
+}
+
+function toggleAllWarnings(total){
+  const rest=document.getElementById('d-warnings-rest');
+  const btn=document.getElementById('d-warnings-toggle');
+  if(!rest||!btn) return;
+  const expanded=rest.style.display!=='none';
+  if(expanded){
+    rest.style.display='none';
+    btn.innerHTML=`Show all ${total} warnings
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+  } else {
+    rest.style.display='flex';
+    btn.innerHTML=`Show fewer warnings
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
+  }
+}
+
 // Build live results page from Supabase data
 function renderLiveResults(results, query){
   const container=document.getElementById('results-cards-container');
@@ -2577,12 +2662,18 @@ function renderLiveResults(results, query){
   container.innerHTML=results.map((med,i)=>{
     const score=scoreMatch(med,query);
     const badge=matchBadgeClass(score);
-    const level=matchLevel(score);
-    const safetyClass=safetyBoxClass(score);
-    const safetyTxt=safetyText(med,score);
+    const banners=safetyBannersHTML(med);
+    const level=banners.allergyHit
+      ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+      : matchLevel(score);
+    const safetyClass=banners.allergyHit?'nr':safetyBoxClass(score);
+    const safetyTxt=banners.allergyHit
+      ? `✗ Allergy warning — do not take`
+      : safetyText(med,score);
     const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
     const sub=`${med.manufacturer||'Unknown'} · ${med.inn}`;
     return `<div class="rcard" style="margin-bottom:12px;position:relative" onclick="goToLiveDetail(${i})">
+      ${banners.html}
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <span class="${badge}">${score}% Match</span>
         <span class="dot ${level.dot}"></span>
@@ -2628,10 +2719,15 @@ function goToLiveDetail(i){
   document.getElementById('d-mfr').textContent=med.manufacturer||'Unknown';
   const badge=document.getElementById('d-badge');
   const matchEl=document.getElementById('d-match');
-  matchEl.textContent=score+'% Match';
-  const sc=score>=90?{bg:'var(--color-teal-tint)',c:'var(--on-teal-tint)'}
-    :score>=75?{bg:'var(--color-orange-tint)',c:'var(--on-orange-tint)'}
-    :{bg:'var(--color-coral-tint)',c:'var(--on-coral-tint)'};
+  const banners=safetyBannersHTML(med);
+  const bHost=document.getElementById('d-safety-banners');
+  if(bHost){ bHost.innerHTML=banners.html; bHost.style.display=banners.html?'block':'none'; }
+  matchEl.textContent=banners.allergyHit?'Allergy warning':(score+'% Match');
+  const sc=banners.allergyHit
+    ? {bg:'var(--color-error-tint)',c:'var(--on-error-tint)'}
+    : score>=90?{bg:'var(--color-teal-tint)',c:'var(--on-teal-tint)'}
+    : score>=75?{bg:'var(--color-orange-tint)',c:'var(--on-orange-tint)'}
+    : {bg:'var(--color-coral-tint)',c:'var(--on-coral-tint)'};
   badge.style.background=sc.bg; matchEl.style.color=sc.c;
   document.getElementById('d-active').innerHTML=`<p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Active ingredient</p><span class="tag-blue">${med.inn}</span>`;
   const srcInfo=medSourceInfo(med);
@@ -2640,8 +2736,7 @@ function goToLiveDetail(i){
   document.getElementById('d-ulabel').textContent='';
   document.getElementById('d-usage').textContent=med.form?`Form: ${med.form}. Always follow pharmacist instructions.`:'Follow pharmacist instructions.';
   document.getElementById('d-source').textContent=srcInfo.name;
-  const warnings=Array.isArray(med.warnings)&&med.warnings.length?med.warnings:['Always verify with a local pharmacist before purchasing.'];
-  document.getElementById('d-warnings').innerHTML=warnings.slice(0,3).map(w=>`<div style="display:flex;gap:8px;align-items:flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-coral)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p style="font-size:13px">${typeof w==='string'?w.slice(0,120)+'…':w}</p></div>`).join('');
+  renderWarnings(med.warnings);
   // Honest "benefits" line — three states, matching showSourceInfo()
   // 1. Verified + URL: "Record verified against [regulator]"  (US/EU/CA launch state)
   // 2. Has source_name, no URL: regulator attributed but no deep-link (Turkey)
@@ -2749,10 +2844,14 @@ async function handleSearch(v){
       if(sl){
         sl.innerHTML=unique.slice(0,6).map((med,i)=>{
           const score=scoreMatch(med,searchTerm);
-          const level=matchLevel(score);
+          const banners=safetyBannersHTML(med);
+          const level=banners.allergyHit
+            ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+            : matchLevel(score);
           const badge=matchBadgeClass(score);
           const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
           return `<div class="rcard result-fade" style="cursor:pointer;padding:14px;position:relative" onclick="goToLiveDetail(${i})">
+            ${banners.html}
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
               <span style="font-size:15px;font-weight:700;color:var(--text-primary);flex:1">${displayName}</span>
               <button class="bm" id="bm-${i}" onclick="event.stopPropagation();toggleBm(${i})" style="position:relative;top:auto;right:auto;flex-shrink:0">
@@ -2817,16 +2916,21 @@ async function selectMedLive(inn, brandName){
       previewCards.innerHTML=unique.slice(0,3).map((med,i)=>{
         const score=scoreMatch(med,inn);
         const badge=matchBadgeClass(score);
-        const level=matchLevel(score);
-        const safetyClass=safetyBoxClass(score);
+        const banners=safetyBannersHTML(med);
+        const level=banners.allergyHit
+          ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+          : matchLevel(score);
+        const safetyClass=banners.allergyHit?'nr':safetyBoxClass(score);
+        const safetyTxt=banners.allergyHit?'✗ Allergy warning — do not take':safetyText(med,score);
         const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
         return `<div class="rcard" onclick="goToLiveDetail(${i})" style="padding:12px">
+          ${banners.html}
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
             <h3 style="font-size:15px">${displayName}</h3>
             <div style="display:flex;align-items:center;gap:6px"><span class="dot ${level.dot}"></span><span style="font-size:12px;color:${level.col};font-weight:600">${level.label}</span><span class="${badge}" style="font-size:11px">${score}%</span></div>
           </div>
           <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">${med.manufacturer||'Unknown'} · ${med.inn}</p>
-          <div class="${safetyClass}" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">${safetyText(med,score)}</p></div>
+          <div class="${safetyClass}" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">${safetyTxt}</p></div>
           <p style="font-size:11px;color:var(--text-disabled);margin-top:8px;padding-top:6px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
         </div>`;
       }).join('');
@@ -3734,6 +3838,7 @@ function toggleCardEdit(card){
       const locP=document.getElementById('profile-display-loc');
       if(locSpan) locSpan.textContent=locText||'Add your location';
       if(locP){ locP.style.color=locText?'':'var(--text-disabled)'; locP.style.fontStyle=locText?'':'italic'; }
+      applyPregnancyVisibility();
     }
     const vB=document.getElementById('hd-v-blood'),iB=document.getElementById('hd-i-blood');
     if(editing){iB.value=vB.textContent.trim();vB.style.display='none';iB.style.display='block';}
@@ -3782,6 +3887,185 @@ function addAllergy(){
   chip.innerHTML=val+'<button onclick="removeAllergy(this)" style="background:none;border:none;cursor:pointer;color:var(--on-coral-tint);padding:0;line-height:1;font-size:16px;opacity:.6;display:flex;align-items:center">×</button>';
   document.getElementById('add-allergy-btn').before(chip);
   cancelAllergyInput();
+}
+
+// ── Current medications (same chip pattern as allergies) ────────────────
+function removeCurrentMed(btn){btn.closest('.current-med-chip').remove();}
+function showCurrentMedInput(){document.getElementById('add-current-med-btn').style.display='none';document.getElementById('current-med-input-wrap').style.display='flex';document.getElementById('current-med-input').focus();}
+function cancelCurrentMedInput(){document.getElementById('current-med-input-wrap').style.display='none';document.getElementById('add-current-med-btn').style.display='flex';document.getElementById('current-med-input').value='';}
+function addCurrentMed(){
+  const input=document.getElementById('current-med-input');
+  const val=input.value.trim();
+  if(!val)return;
+  const chip=document.createElement('span');
+  chip.className='current-med-chip';
+  chip.style.cssText='background:var(--color-purple-tint);color:var(--on-purple-tint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid var(--color-purple-light);display:flex;align-items:center;gap:6px';
+  chip.innerHTML=val+'<button onclick="removeCurrentMed(this)" style="background:none;border:none;cursor:pointer;color:var(--on-purple-tint);padding:0;line-height:1;font-size:16px;opacity:.6;display:flex;align-items:center">×</button>';
+  document.getElementById('add-current-med-btn').before(chip);
+  cancelCurrentMedInput();
+}
+
+// ── Pregnancy row visibility + value sync ───────────────────────────────
+function applyPregnancyVisibility(){
+  const sexEl=document.getElementById('hd-v-sex');
+  const row=document.getElementById('hd-row-pregnant');
+  if(!sexEl||!row) return;
+  const sex=(sexEl.textContent||'').trim().toLowerCase();
+  // Show for female or unspecified (empty / "not set"). Hide for male.
+  const hide=sex==='male';
+  row.style.display=hide?'none':'flex';
+  if(hide){
+    const cb=document.getElementById('hd-i-pregnant');
+    if(cb) cb.checked=false;
+    const lbl=document.getElementById('hd-v-pregnant');
+    if(lbl) lbl.textContent='No';
+  }
+}
+function onPregnantToggle(){
+  const cb=document.getElementById('hd-i-pregnant');
+  const lbl=document.getElementById('hd-v-pregnant');
+  if(lbl) lbl.textContent=cb&&cb.checked?'Yes':'No';
+  if(typeof saveCurrentProfile==='function') saveCurrentProfile();
+}
+
+// ── Allergy families for partial-match cross-check ──────────────────────
+// Small curated map: family keyword → list of INN-level matches. Case-insensitive.
+const ALLERGY_FAMILIES={
+  'penicillin':['amoxicillin','ampicillin','penicillin'],
+  'sulfa':['sulfamethoxazole','sulfasalazine','sulfadiazine'],
+  'sulpha':['sulfamethoxazole','sulfasalazine','sulfadiazine'],
+  'nsaid':['ibuprofen','naproxen','diclofenac','aspirin','ketoprofen'],
+  'nsaids':['ibuprofen','naproxen','diclofenac','aspirin','ketoprofen'],
+  'statin':['atorvastatin','simvastatin','rosuvastatin','pravastatin'],
+  'statins':['atorvastatin','simvastatin','rosuvastatin','pravastatin'],
+};
+
+// Scan a med's ingredients (INN, brand, excipients) for any allergy hit.
+// Returns the first matched ingredient label for display, or null.
+function checkAllergyHit(med, allergies){
+  if(!med||!Array.isArray(allergies)||!allergies.length) return null;
+  const haystack=[
+    med.inn, med.brand_name,
+    ...(Array.isArray(med.shared)?med.shared:[]),
+    ...(Array.isArray(med.unique)?med.unique:[])
+  ].filter(Boolean).map(s=>String(s).toLowerCase());
+  for(const rawA of allergies){
+    const a=String(rawA||'').trim().toLowerCase();
+    if(!a) continue;
+    // Direct substring match in either direction (covers "ibuprofen" vs "ibuprofen 400mg").
+    for(const h of haystack){
+      if(h.includes(a)||a.includes(h)) return rawA;
+    }
+    // Family expansion: if the allergy term matches a family key, also check family members.
+    const fam=ALLERGY_FAMILIES[a];
+    if(fam){
+      for(const member of fam){
+        const m=member.toLowerCase();
+        for(const h of haystack){
+          if(h.includes(m)) return rawA;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// ── Contraindications engine ────────────────────────────────────────────
+// Each rule has a predicate(med, profile) → boolean and a severity+message.
+// Severity: 'danger' (red) or 'warning' (amber). Matched at render time.
+const DRUG_CLASSES={
+  NSAIDS:['ibuprofen','naproxen','diclofenac','aspirin','ketoprofen'],
+  ACE_INHIBITORS:['enalapril','lisinopril','ramipril','captopril','perindopril'],
+  ARBS:['losartan','valsartan','irbesartan','candesartan','telmisartan'],
+  ANTICOAGULANTS:['warfarin'],
+  PPIS:['omeprazole','pantoprazole','esomeprazole','lansoprazole','rabeprazole'],
+  CLOPIDOGREL:['clopidogrel'],
+};
+function normInn(s){ return String(s||'').toLowerCase().trim(); }
+function innMatchesAny(inn, list){
+  const n=normInn(inn);
+  if(!n) return false;
+  return list.some(item=>n===item||n.includes(item)||item.includes(n));
+}
+function profileTakesClass(profile, classList){
+  const meds=Array.isArray(profile&&profile.currentMedications)?profile.currentMedications:[];
+  if(!meds.length) return null;
+  for(const m of meds){
+    if(innMatchesAny(m, classList)) return m;
+  }
+  return null;
+}
+function profileAge(profile){
+  const dob=profile&&profile.dob?String(profile.dob).trim():'';
+  if(!dob) return null;
+  const d=new Date(dob);
+  if(isNaN(d.getTime())) return null;
+  const now=new Date();
+  let age=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
+  return age;
+}
+function checkContraindications(med, profile){
+  if(!med||!profile) return [];
+  const inn=normInn(med.inn);
+  if(!inn) return [];
+  const hits=[];
+  const isNsaid=innMatchesAny(inn, DRUG_CLASSES.NSAIDS);
+  const isAspirin=inn.includes('aspirin');
+  const isAce=innMatchesAny(inn, DRUG_CLASSES.ACE_INHIBITORS);
+  const isPpi=innMatchesAny(inn, DRUG_CLASSES.PPIS);
+
+  if(isNsaid){
+    const w=profileTakesClass(profile, DRUG_CLASSES.ANTICOAGULANTS);
+    if(w) hits.push({severity:'danger',message:`Bleeding risk: ${med.inn} (NSAID) combined with ${w} (anticoagulant) can cause serious bleeding.`});
+    const ace=profileTakesClass(profile, DRUG_CLASSES.ACE_INHIBITORS)||profileTakesClass(profile, DRUG_CLASSES.ARBS);
+    if(ace) hits.push({severity:'warning',message:`Kidney risk: combining ${med.inn} (NSAID) with ${ace} can reduce kidney function.`});
+    if(profile.isPregnant) hits.push({severity:'danger',message:`Contraindicated in pregnancy: NSAIDs like ${med.inn} should be avoided, especially in the third trimester.`});
+  }
+  if(isPpi){
+    const c=profileTakesClass(profile, DRUG_CLASSES.CLOPIDOGREL);
+    if(c) hits.push({severity:'warning',message:`Reduced efficacy: ${med.inn} (PPI) can lower the anti-platelet effect of ${c}.`});
+  }
+  if(isAspirin){
+    const age=profileAge(profile);
+    if(age!==null&&age<18) hits.push({severity:'danger',message:`Reye syndrome risk: aspirin is not recommended for anyone under 18.`});
+  }
+  if(isAce && profile.isPregnant){
+    hits.push({severity:'danger',message:`Contraindicated in pregnancy: ACE inhibitors like ${med.inn} can harm the fetus.`});
+  }
+  return hits;
+}
+
+// ── Banners (contraindication above, allergy below) ─────────────────────
+function profileForSafety(){
+  // Read the freshest profile directly from storage so we don't depend on page mounting.
+  try { return JSON.parse(localStorage.getItem('mm_profile_v1')||'null')||{}; } catch { return {}; }
+}
+function safetyBannersHTML(med){
+  const profile=profileForSafety();
+  const allergies=Array.isArray(profile.allergies)?profile.allergies:[];
+  const allergyHit=checkAllergyHit(med, allergies);
+  const contraHits=checkContraindications(med, profile);
+  let html='';
+  for(const h of contraHits){
+    const isDanger=h.severity==='danger';
+    const bg=isDanger?'var(--color-error-tint)':'var(--color-warning-tint)';
+    const bd=isDanger?'var(--color-error)':'var(--color-warning)';
+    const fg=isDanger?'var(--on-error-tint)':'var(--on-warning-tint)';
+    const title=isDanger?'Contraindication':'Interaction warning';
+    html+=`<div style="background:${bg};border:1px solid ${bd};border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${fg}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div style="flex:1;min-width:0"><p style="font-size:12px;font-weight:700;color:${fg};margin:0 0 2px">${title}</p><p style="font-size:12px;color:${fg};line-height:1.4;margin:0">${h.message}</p></div>
+    </div>`;
+  }
+  if(allergyHit){
+    html+=`<div style="background:var(--color-error-tint);border:1px solid var(--color-error);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--on-error-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="flex:1;min-width:0"><p style="font-size:12px;font-weight:700;color:var(--on-error-tint);margin:0 0 2px">Allergy warning</p><p style="font-size:12px;color:var(--on-error-tint);line-height:1.4;margin:0">Contains ${allergyHit} — in your allergy list.</p></div>
+    </div>`;
+  }
+  return {html, allergyHit:!!allergyHit, contraCount:contraHits.length};
 }
 
 // ── Bottom sheet picker ───────────────────────────────
@@ -3877,6 +4161,7 @@ function loadSavedProfile(){
   try { return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null'); } catch { return null; }
 }
 function saveCurrentProfile(){
+  const pregCb=document.getElementById('hd-i-pregnant');
   const data={
     first:getVal('hd-v-first'), last:getVal('hd-v-last'),
     dob:getVal('hd-v-dob'), sex:getVal('hd-v-sex'),
@@ -3885,6 +4170,8 @@ function saveCurrentProfile(){
     ecName:getVal('ec-v-name'), ecRel:getVal('ec-v-rel'), ecPhone:getVal('ec-v-phone'),
     midId:getVal('mid-v-id'),
     allergies:[...document.querySelectorAll('#allergy-chips .allergy-chip')].map(c=>c.childNodes[0]?.textContent.trim()).filter(Boolean),
+    currentMedications:[...document.querySelectorAll('#current-med-chips .current-med-chip')].map(c=>c.childNodes[0]?.textContent.trim()).filter(Boolean),
+    isPregnant:!!(pregCb&&pregCb.checked),
     photo:(document.getElementById('profile-photo')||{}).src||''
   };
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
@@ -3928,8 +4215,15 @@ function clearProfileToEmpty(){
   if(chipsWrap){
     [...chipsWrap.querySelectorAll('.allergy-chip')].forEach(c=>c.remove());
   }
-  const verified=document.querySelector('#page-profile p[style*="Verified by MedMatch"]');
-  if(verified) verified.closest('div').style.display='none';
+  const medsWrap=document.getElementById('current-med-chips');
+  if(medsWrap){
+    [...medsWrap.querySelectorAll('.current-med-chip')].forEach(c=>c.remove());
+  }
+  const pregCb=document.getElementById('hd-i-pregnant');
+  if(pregCb) pregCb.checked=false;
+  const pregLbl=document.getElementById('hd-v-pregnant');
+  if(pregLbl) pregLbl.textContent='No';
+  applyPregnancyVisibility();
 }
 function applySavedProfile(saved){
   const setField=(id,val)=>{const el=document.getElementById(id);if(!el)return;if(val){el.textContent=val;el.style.color='';el.style.fontStyle='';el.style.fontWeight='';}else{setEmptyField(id);}};
@@ -3958,6 +4252,14 @@ function applySavedProfile(saved){
     const input=document.getElementById('allergy-input');
     saved.allergies.forEach(a=>{if(input){input.value=a;addAllergy();}});
   }
+  if(Array.isArray(saved.currentMedications) && saved.currentMedications.length){
+    const input=document.getElementById('current-med-input');
+    saved.currentMedications.forEach(m=>{if(input){input.value=m;addCurrentMed();}});
+  }
+  const pregCb=document.getElementById('hd-i-pregnant');
+  const pregLbl=document.getElementById('hd-v-pregnant');
+  if(pregCb){ pregCb.checked=!!saved.isPregnant; if(pregLbl) pregLbl.textContent=pregCb.checked?'Yes':'No'; }
+  applyPregnancyVisibility();
   updateProfileInviteVisibility();
 }
 function updateProfileInviteVisibility(){
@@ -4020,6 +4322,9 @@ function initProfile(){
   const origAdd=window.addAllergy, origRemove=window.removeAllergy;
   if(typeof origAdd==='function') window.addAllergy=function(){origAdd.apply(this,arguments);saveCurrentProfile();};
   if(typeof origRemove==='function') window.removeAllergy=function(btn){origRemove.call(this,btn);saveCurrentProfile();};
+  const origAddMed=window.addCurrentMed, origRemoveMed=window.removeCurrentMed;
+  if(typeof origAddMed==='function') window.addCurrentMed=function(){origAddMed.apply(this,arguments);saveCurrentProfile();};
+  if(typeof origRemoveMed==='function') window.removeCurrentMed=function(btn){origRemoveMed.call(this,btn);saveCurrentProfile();};
   const origUpdatePhoto=window.updatePhoto;
   if(typeof origUpdatePhoto==='function'){
     window.updatePhoto=function(input){
