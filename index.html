@@ -2722,12 +2722,10 @@ function goToLiveDetail(i){
   const banners=safetyBannersHTML(med);
   const bHost=document.getElementById('d-safety-banners');
   if(bHost){ bHost.innerHTML=banners.html; bHost.style.display=banners.html?'block':'none'; }
-  matchEl.textContent=banners.allergyHit?'Allergy warning':(score+'% Match');
-  const sc=banners.allergyHit
-    ? {bg:'var(--color-error-tint)',c:'var(--on-error-tint)'}
-    : score>=90?{bg:'var(--color-teal-tint)',c:'var(--on-teal-tint)'}
-    : score>=75?{bg:'var(--color-orange-tint)',c:'var(--on-orange-tint)'}
-    : {bg:'var(--color-coral-tint)',c:'var(--on-coral-tint)'};
+  matchEl.textContent=score+'% Match';
+  const sc=score>=90?{bg:'var(--color-teal-tint)',c:'var(--on-teal-tint)'}
+    :score>=75?{bg:'var(--color-orange-tint)',c:'var(--on-orange-tint)'}
+    :{bg:'var(--color-coral-tint)',c:'var(--on-coral-tint)'};
   badge.style.background=sc.bg; matchEl.style.color=sc.c;
   document.getElementById('d-active').innerHTML=`<p style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;margin-bottom:8px">Active ingredient</p><span class="tag-blue">${med.inn}</span>`;
   const srcInfo=medSourceInfo(med);
@@ -4061,7 +4059,7 @@ function safetyBannersHTML(med){
   }
   if(allergyHit){
     html+=`<div style="background:var(--color-error-tint);border:1px solid var(--color-error);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--on-error-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--on-error-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       <div style="flex:1;min-width:0"><p style="font-size:12px;font-weight:700;color:var(--on-error-tint);margin:0 0 2px">Allergy warning</p><p style="font-size:12px;color:var(--on-error-tint);line-height:1.4;margin:0">Contains ${allergyHit} — in your allergy list.</p></div>
     </div>`;
   }
