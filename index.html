@@ -409,6 +409,13 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       Scan packaging or prescription
     </button>
     <p style="margin:10px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.4">MedMatch covers prescription &amp; OTC medications. Supplements and vitamins have limited coverage.</p>
+    <!-- First-session-only shortcut to the destination picker, so newly-onboarded
+         users don't have to dig into Profile → Travel Settings to switch country.
+         Visibility is controlled by refreshChangeDestVisibility(); shown for 24h
+         after onboarding, then hidden permanently. -->
+    <button id="search-change-dest" onclick="openPicker('dest')" style="display:none;margin:10px 0 0;padding:0;background:none;border:none;font-size:12px;font-weight:600;color:#4F6EF7;cursor:pointer;text-decoration:underline;align-items:center;gap:4px">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Change destination
+    </button>
   </div>
   <div class="scroll" style="padding:16px 20px 56px">
 
@@ -527,7 +534,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <div style="display:flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
         <span style="font-size:13px;font-weight:600;color:#4F6EF7" id="results-dest-label">Turkey</span>
-        <span style="font-size:12px;color:var(--text-disabled)">· 5 equivalents found</span>
+        <span id="results-count-label" style="font-size:12px;color:var(--text-disabled)">· …</span>
       </div>
       <button onclick="document.getElementById('match-legend').style.display=document.getElementById('match-legend').style.display==='none'?'flex':'none'" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-disabled);text-decoration:underline;padding:0">What's this?</button>
     </div>
@@ -1410,6 +1417,10 @@ function obNext(){
     if(homeVal) homeVal.textContent=selHome;
     const foundHome=COUNTRIES.find(c=>c.n===selHome);
     if(homeFlag&&foundHome) homeFlag.textContent=foundHome.f;
+    // Stamp onboarding completion so the search page can show a one-time
+    // "Change destination" link for the first 24 hours (see ONBOARD_TS_KEY).
+    try { localStorage.setItem(ONBOARD_TS_KEY, String(Date.now())); } catch {}
+    refreshChangeDestVisibility();
     // Go to tutorial instead of search
     tutStep=0;
     renderTutStep();
@@ -1469,6 +1480,23 @@ function dismissSearchTipbar(){
     }
   } catch {}
 })();
+
+// Onboarding-completion timestamp drives the one-time "Change destination"
+// link on the search page. Shown for 24h after onboarding completes, then
+// the user is expected to use Profile → Travel Settings.
+const ONBOARD_TS_KEY='mm_onboarded_at';
+const ONBOARD_GRACE_MS=24*60*60*1000;
+function refreshChangeDestVisibility(){
+  const el=document.getElementById('search-change-dest');
+  if(!el) return;
+  let ts=0;
+  try { ts=parseInt(localStorage.getItem(ONBOARD_TS_KEY)||'0',10); } catch {}
+  const visible = !!ts && (Date.now()-ts) < ONBOARD_GRACE_MS;
+  el.style.display = visible ? 'inline-flex' : 'none';
+}
+document.addEventListener('DOMContentLoaded', refreshChangeDestVisibility);
+// If DOM is already parsed by the time this script runs, evaluate now too.
+refreshChangeDestVisibility();
 let openSwipe=null;
 
 function renderRecents(){
@@ -2572,10 +2600,14 @@ function renderLiveResults(results, query){
     </div>`;
   }).join('');
 
-  // Update results count and destination label
+  // Update results count and destination label.
+  // NOTE: previously this used a querySelector targeting `.scroll span[...]`
+  // but the count span is a sibling of `.scroll`, not a descendant — so the
+  // update silently no-op'd and users saw the hardcoded "5" placeholder
+  // forever. ID lookup is the fix.
   const destLabel=document.getElementById('results-dest-label');
   if(destLabel) destLabel.textContent=selC;
-  const countEl=document.querySelector('#page-results .scroll span[style*="text-disabled"]');
+  const countEl=document.getElementById('results-count-label');
   if(countEl) countEl.textContent=`· ${results.length} equivalents found`;
 }
 
@@ -2948,7 +2980,15 @@ function renderPharmacyList(pharmacies){
   const PLUS_ICO=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--on-teal-tint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/></svg>`;
 
   if(pharmacies.length===0){
-    list.innerHTML=`<div style="padding:24px;text-align:center"><p style="font-size:14px;color:var(--text-secondary)">No pharmacies match your search</p></div>`;
+    // Match the empty-state pattern used elsewhere (search "no equivalents",
+    // saved "no bookmarks"): circle-bg icon, heading, supportive body copy.
+    list.innerHTML=`<div style="padding:32px 0;text-align:center">
+      <div style="width:64px;height:64px;background:var(--surface-input);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <h3 style="font-size:16px;margin-bottom:6px;color:var(--text-primary)">No pharmacies found</h3>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:0;line-height:1.5">Try searching by city name or check your location settings.</p>
+    </div>`;
     return;
   }
 
