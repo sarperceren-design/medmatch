@@ -2692,13 +2692,15 @@ function renderLiveResults(results, query){
     const score=scoreMatch(med,query);
     const badge=matchBadgeClass(score);
     const banners=safetyBannersHTML(med);
-    const level=banners.allergyHit
-      ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+    const severity=cardSeverity(med,score,banners.allergyHit,medContraLevel(med));
+    const level=severity==='danger'
+      ? {dot:'dot-r',label:'Do not take',col:'var(--color-error)'}
+      : severity==='caution'
+      ? {dot:'dot-a',label:'Verify with pharmacist',col:'var(--on-orange-tint)'}
       : matchLevel(score);
-    const safetyClass=banners.allergyHit?'nr':safetyBoxClass(score);
-    const safetyTxt=banners.allergyHit
-      ? `✗ Allergy warning — do not take`
-      : safetyText(med,score);
+    const safetyBox=severity==='match'
+      ? `<div class="${safetyBoxClass(score)}"><p class="nt">${safetyText(med,score)}</p></div>`
+      : '';
     const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
     const sub=`${med.manufacturer||'Unknown'} · ${med.inn}`;
     return `<div class="rcard" style="margin-bottom:12px;position:relative" onclick="goToLiveDetail(${i})">
@@ -2715,7 +2717,7 @@ function renderLiveResults(results, query){
         </button>
       </div>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">${sub}</p>
-      <div class="${safetyClass}"><p class="nt">${safetyTxt}</p></div>
+      ${safetyBox}
       <p style="font-size:11px;color:var(--text-disabled);margin-top:10px;padding-top:8px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
     </div>`;
   }).join('');
@@ -2872,8 +2874,11 @@ async function handleSearch(v){
         sl.innerHTML=unique.slice(0,6).map((med,i)=>{
           const score=scoreMatch(med,searchTerm);
           const banners=safetyBannersHTML(med);
-          const level=banners.allergyHit
-            ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+          const severity=cardSeverity(med,score,banners.allergyHit,medContraLevel(med));
+          const level=severity==='danger'
+            ? {dot:'dot-r',label:'Do not take',col:'var(--color-error)'}
+            : severity==='caution'
+            ? {dot:'dot-a',label:'Verify with pharmacist',col:'var(--on-orange-tint)'}
             : matchLevel(score);
           const badge=matchBadgeClass(score);
           const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
@@ -2944,11 +2949,15 @@ async function selectMedLive(inn, brandName){
         const score=scoreMatch(med,inn);
         const badge=matchBadgeClass(score);
         const banners=safetyBannersHTML(med);
-        const level=banners.allergyHit
-          ? {dot:'dot-r',label:'Allergy warning',col:'var(--color-error)'}
+        const severity=cardSeverity(med,score,banners.allergyHit,medContraLevel(med));
+        const level=severity==='danger'
+          ? {dot:'dot-r',label:'Do not take',col:'var(--color-error)'}
+          : severity==='caution'
+          ? {dot:'dot-a',label:'Verify with pharmacist',col:'var(--on-orange-tint)'}
           : matchLevel(score);
-        const safetyClass=banners.allergyHit?'nr':safetyBoxClass(score);
-        const safetyTxt=banners.allergyHit?'✗ Allergy warning — do not take':safetyText(med,score);
+        const safetyBox=severity==='match'
+          ? `<div class="${safetyBoxClass(score)}" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">${safetyText(med,score)}</p></div>`
+          : '';
         const displayName=toTitleCase(med.brand_name)+(med.strength&&med.strength!=='EMPTY'?' '+med.strength:'');
         return `<div class="rcard" onclick="goToLiveDetail(${i})" style="padding:12px">
           ${banners.html}
@@ -2957,7 +2966,7 @@ async function selectMedLive(inn, brandName){
             <div style="display:flex;align-items:center;gap:6px"><span class="dot ${level.dot}"></span><span style="font-size:12px;color:${level.col};font-weight:600">${level.label}</span><span class="${badge}" style="font-size:11px">${score}%</span></div>
           </div>
           <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">${med.manufacturer||'Unknown'} · ${med.inn}</p>
-          <div class="${safetyClass}" style="padding:6px 10px"><p class="nt" style="font-size:11px;margin:0">${safetyTxt}</p></div>
+          ${safetyBox}
           <p style="font-size:11px;color:var(--text-disabled);margin-top:8px;padding-top:6px;border-top:1px solid var(--divider)">For reference only — consult a pharmacist before use</p>
         </div>`;
       }).join('');
@@ -4160,6 +4169,21 @@ function safetyBannersHTML(med){
     </div>`;
   }
   return {html, allergyHit:!!allergyHit, contraCount:contraHits.length};
+}
+
+// Banner severity wins over score: a 100% match with a danger banner must NOT
+// say "Safe" in the body. Drives status row + bottom-box visibility.
+function medContraLevel(med){
+  const profile=profileForSafety();
+  const hits=checkContraindications(med, profile);
+  if(hits.some(h=>h.severity==='danger')) return 'danger';
+  if(hits.length) return 'warning';
+  return null;
+}
+function cardSeverity(med, score, allergyHit, contraindicationLevel){
+  if(allergyHit || contraindicationLevel==='danger') return 'danger';
+  if(contraindicationLevel==='warning') return 'caution';
+  return 'match';
 }
 
 // ── Bottom sheet picker ───────────────────────────────
