@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" fill="none" title="MedMatch App Logo"><metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"><rdf:Description><dc:creator>RealFaviconGenerator</dc:creator><dc:source>https://realfavicongenerator.net</dc:source></rdf:Description></rdf:RDF></metadata><defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FAFAF9"></stop>
+      <stop offset="100%" stop-color="#F1F5F9"></stop>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"></stop>
+      <stop offset="45%" stop-color="white" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="ring" x1="38" y1="38" x2="142" y2="142" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4B6CB7"></stop>
+      <stop offset="100%" stop-color="#2D4A8A"></stop>
+    </linearGradient>
+    <linearGradient id="arcGrad" x1="40" y1="90" x2="125" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F97316" stop-opacity="0.2"></stop>
+      <stop offset="50%" stop-color="#EA580C"></stop>
+      <stop offset="100%" stop-color="#DC2626"></stop>
+    </linearGradient>
+    <linearGradient id="hb" x1="28" y1="90" x2="152" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DC2626" stop-opacity="0"></stop>
+      <stop offset="20%" stop-color="#DC2626"></stop>
+      <stop offset="80%" stop-color="#DC2626"></stop>
+      <stop offset="100%" stop-color="#DC2626" stop-opacity="0"></stop>
+    </linearGradient>
+    <!-- Soft glow: same gradient but wider and semi-transparent — no filter needed -->
+    <linearGradient id="hbGlow" x1="28" y1="90" x2="152" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#DC2626" stop-opacity="0"></stop>
+      <stop offset="20%" stop-color="#DC2626" stop-opacity="0.18"></stop>
+      <stop offset="80%" stop-color="#DC2626" stop-opacity="0.18"></stop>
+      <stop offset="100%" stop-color="#DC2626" stop-opacity="0"></stop>
+    </linearGradient>
+    <clipPath id="cc"><circle cx="90" cy="90" r="50"></circle></clipPath>
+  </defs><rect width="180" height="180" rx="38" fill="url(#bg)"></rect><rect width="180" height="85" rx="38" fill="url(#glass)"></rect><g clip-path="url(#cc)">
+    <ellipse cx="90" cy="90" rx="18" ry="50" fill="none" stroke="#94A3B8" stroke-width="1.5" opacity="0.45"></ellipse>
+    <ellipse cx="90" cy="90" rx="36" ry="50" fill="none" stroke="#94A3B8" stroke-width="1.5" opacity="0.35"></ellipse>
+    <line x1="40" y1="65" x2="140" y2="65" stroke="#94A3B8" stroke-width="1.2" opacity="0.35"></line>
+    <line x1="40" y1="90" x2="140" y2="90" stroke="#94A3B8" stroke-width="1.2" opacity="0.28"></line>
+    <line x1="40" y1="115" x2="140" y2="115" stroke="#94A3B8" stroke-width="1.2" opacity="0.35"></line>
+  </g><circle cx="90" cy="90" r="50" stroke="url(#ring)" stroke-width="2.5" fill="none"></circle><path d="M 40 90 A 50 50 0 0 1 125.4 54.6" stroke="url(#arcGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"></path><g clip-path="url(#cc)">
+    <path d="M40 90 L58 90 L66 72 L74 108 L82 82 L90 90 L98 90 L106 74 L114 106 L120 90 L140 90" stroke="url(#hbGlow)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  </g><g clip-path="url(#cc)">
+    <path d="M40 90 L58 90 L66 72 L74 108 L82 82 L90 90 L98 90 L106 74 L114 106 L120 90 L140 90" stroke="url(#hb)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  </g><g transform="translate(125.4,54.6) rotate(135)">
+    <!-- Drop shadow via offset duplicate -->
+    <rect x="-2.5" y="-10" width="5" height="20" rx="2.5" fill="#7F1D1D" opacity="0.2" transform="translate(0.5,1)"></rect>
+    <!-- Fuselage -->
+    <rect x="-2.5" y="-11" width="5" height="20" rx="2.5" fill="#B91C1C"></rect>
+    <!-- Wings -->
+    <path d="M-2.5 -3 L-14 4 L-13 7 L-2.5 3 L2.5 3 L13 7 L14 4 L2.5 -3 Z" fill="#991B1B"></path>
+    <path d="M-2.5 -3 L-14 4 L-2.5 3 Z" fill="#DC2626"></path>
+    <path d="M2.5 -3 L14 4 L2.5 3 Z" fill="#DC2626"></path>
+    <!-- Tail -->
+    <path d="M-2 7 L-7 13 L-6 14.5 L-2 11 L2 11 L6 14.5 L7 13 L2 7 Z" fill="#991B1B"></path>
+    <path d="M-2 7 L-7 13 L-2 11 Z" fill="#DC2626"></path>
+    <path d="M2 7 L7 13 L2 11 Z" fill="#DC2626"></path>
+  </g></svg>
