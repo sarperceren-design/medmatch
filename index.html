@@ -432,12 +432,11 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       Scan packaging or prescription
     </button>
     <p style="margin:10px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.4">MedMatch covers prescription &amp; OTC medications. Supplements and vitamins have limited coverage.</p>
-    <!-- First-session-only shortcut to the destination picker, so newly-onboarded
-         users don't have to dig into Profile → Travel Settings to switch country.
-         Visibility is controlled by refreshChangeDestVisibility(); shown for 24h
-         after onboarding, then hidden permanently. -->
-    <button id="search-change-dest" onclick="openPicker('dest')" style="display:none;margin:10px 0 0;padding:0;background:none;border:none;font-size:12px;font-weight:600;color:#4F6EF7;cursor:pointer;text-decoration:underline;align-items:center;gap:4px">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Change destination
+    <!-- Persistent "Traveling to {country}" status link. Tap to open the
+         destination picker. Text is rendered dynamically by
+         refreshChangeDestText() at script load and on every picker commit. -->
+    <button id="search-change-dest" onclick="openPicker('dest')" style="display:inline-flex;margin:10px 0 0;padding:0;background:none;border:none;font-size:12px;font-weight:600;color:#4F6EF7;cursor:pointer;text-decoration:underline;align-items:center;gap:4px">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span id="search-change-dest-text">Set destination</span>
     </button>
   </div>
   <div class="scroll" style="padding:16px 20px 56px">
@@ -1482,10 +1481,9 @@ function obNext(){
     if(homeVal) homeVal.textContent=selHome;
     const foundHome=COUNTRIES.find(c=>c.n===selHome);
     if(homeFlag&&foundHome) homeFlag.textContent=foundHome.f;
-    // Stamp onboarding completion so the search page can show a one-time
-    // "Change destination" link for the first 24 hours (see ONBOARD_TS_KEY).
+    // Stamp onboarding completion (see ONBOARD_TS_KEY).
     try { localStorage.setItem(ONBOARD_TS_KEY, String(Date.now())); } catch {}
-    refreshChangeDestVisibility();
+    refreshChangeDestText();
     // Go to tutorial instead of search
     tutStep=0;
     renderTutStep();
@@ -1546,22 +1544,29 @@ function dismissSearchTipbar(){
   } catch {}
 })();
 
-// Onboarding-completion timestamp drives the one-time "Change destination"
-// link on the search page. Shown for 24h after onboarding completes, then
-// the user is expected to use Profile → Travel Settings.
+// Onboarding-completion timestamp. Stamped at the end of onboarding;
+// preserved as a hook for future "new user" flows. (The earlier 24h grace
+// window for the Change-destination link was removed when that link
+// became a permanent informational status.)
 const ONBOARD_TS_KEY='mm_onboarded_at';
-const ONBOARD_GRACE_MS=24*60*60*1000;
-function refreshChangeDestVisibility(){
-  const el=document.getElementById('search-change-dest');
-  if(!el) return;
-  let ts=0;
-  try { ts=parseInt(localStorage.getItem(ONBOARD_TS_KEY)||'0',10); } catch {}
-  const visible = !!ts && (Date.now()-ts) < ONBOARD_GRACE_MS;
-  el.style.display = visible ? 'inline-flex' : 'none';
+// Reflect the current destination on the search-page link. selC is the
+// in-memory canonical (country name, e.g. "Turkey"); #ts-dest-val is the
+// DOM source-of-truth that the picker writes to and HTML defaults to
+// "Turkey". Empty-state fallback: production users always have a
+// destination set, but if both are empty we show "Set destination".
+function refreshChangeDestText(){
+  const span=document.getElementById('search-change-dest-text');
+  if(!span) return;
+  let dest=selC;
+  if(!dest){
+    const destVal=document.getElementById('ts-dest-val');
+    dest=destVal?(destVal.textContent||'').trim():'';
+  }
+  span.textContent = dest ? ('Traveling to '+dest) : 'Set destination';
 }
-document.addEventListener('DOMContentLoaded', refreshChangeDestVisibility);
+document.addEventListener('DOMContentLoaded', refreshChangeDestText);
 // If DOM is already parsed by the time this script runs, evaluate now too.
-refreshChangeDestVisibility();
+refreshChangeDestText();
 let openSwipe=null;
 
 function renderRecents(){
@@ -4557,6 +4562,8 @@ function selectPickerItem(val,flag){
     // Update results destination label if visible
     const destLabel=document.getElementById('results-dest-label');
     if(destLabel) destLabel.textContent=selC;
+    // Reflect the new destination on the search-page link.
+    refreshChangeDestText();
     // Invalidate search cache so next search fetches for new country
     Object.keys(searchCache).forEach(k=>delete searchCache[k]);
     // Refresh pharmacy cards immediately
