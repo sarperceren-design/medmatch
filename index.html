@@ -2087,33 +2087,36 @@ function fuzzyMatchBrand(query){
   return bestDist<=maxDist ? bestInn : null;
 }
 
-// Returns {result: string, verified: boolean}.
+// Returns {result: string, verified: boolean, source: string}.
 //   verified=true  → BRAND_MAP/fuzzy hit, OR raw input is itself a known
 //                    canonical INN (per INN_SET, defined alongside DRUG_CLASSES).
-//   verified=false → no mapping; result is the raw lowercased input. The
-//                    profile-input flow treats this as "unverified" and
-//                    persists a sidecar marker; the search flow ignores it.
-//   To distinguish "verified canonical → silent commit" vs "verified
-//   suggestion → did-you-mean prompt", callers compare result to the
-//   lowercased input themselves.
+//   verified=false → no mapping; result is the raw lowercased input.
+//   source         → 'BRAND_MAP' | 'fuzzy' | 'INN_SET' | 'unresolved'.
+//                    Stamped onto profile chips so saveCurrentProfile can
+//                    persist the resolution method without re-running the
+//                    resolver on every save.
+//   The profile-input flow treats verified=false as "unverified" and the
+//   search flow ignores it. To distinguish "verified canonical → silent
+//   commit" vs "verified suggestion → did-you-mean prompt", callers compare
+//   result to the lowercased input themselves.
 function resolveSearchTerm(v){
   const lower=v.toLowerCase().trim();
   // 1. Exact / substring match — covers known brands ("advil"), category
   //    phrases ("birth control"), and the explicit typo entries.
   for(const [brand,inn] of Object.entries(BRAND_MAP)){
-    if(lower.includes(brand)) return {result:inn, verified:true};
+    if(lower.includes(brand)) return {result:inn, verified:true, source:'BRAND_MAP'};
   }
   // 2. Fuzzy fallback — catches any typo within edit-distance threshold
   //    (volteren→voltaren, ibuprofne→ibuprofen, amoxiccilin→amoxicillin)
   //    without needing a hardcoded list. If confidence is too low, return
   //    the raw query so handleSearch falls through to the AI Worker.
   const fuzzy=fuzzyMatchBrand(lower);
-  if(fuzzy) return {result:fuzzy, verified:true};
+  if(fuzzy) return {result:fuzzy, verified:true, source:'fuzzy'};
   // 3. Raw input might itself already be a known canonical INN — verify
   //    against INN_SET so the profile flow can commit silently without
   //    flagging a verified user-typed canonical as "unverified".
-  if(typeof INN_SET!=='undefined' && INN_SET.has(lower)) return {result:lower, verified:true};
-  return {result:lower, verified:false};
+  if(typeof INN_SET!=='undefined' && INN_SET.has(lower)) return {result:lower, verified:true, source:'INN_SET'};
+  return {result:lower, verified:false, source:'unresolved'};
 }
 
 // Convert a brand name to Title Case for display. Supabase sometimes returns
@@ -3995,39 +3998,47 @@ function removeAllergy(btn){btn.closest('.allergy-chip').remove();}
 function showAllergyInput(){document.getElementById('add-allergy-btn').style.display='none';document.getElementById('allergy-input-wrap').style.display='flex';document.getElementById('allergy-input').focus();}
 function cancelAllergyInput(){document.getElementById('allergy-input-wrap').style.display='none';document.getElementById('add-allergy-btn').style.display='flex';document.getElementById('allergy-input').value='';}
 
-// Build an allergy/current-med chip with the verified flag baked in.
-// Uses textContent + appendChild instead of innerHTML to neutralise the
-// XSS sink that a typed value could otherwise carry. data-chip-text
-// preserves the canonical readout so saveCurrentProfile doesn't depend
-// on positional childNodes[0]. data-unverified is set ONLY when
-// verified=false so the DOM stays clean for the common case.
-function createAllergyChip(value, verified){
-  return _createProfileChip(value, verified, {
+// Build an allergy/current-med chip from a structured profile entry
+// {raw, canonical, verified, source}. Uses textContent + appendChild
+// instead of innerHTML to neutralise the XSS sink that a typed value
+// could otherwise carry. The four dataset attributes (data-raw,
+// data-chip-text=canonical, data-source, data-unverified) let
+// saveCurrentProfile reconstruct the exact same structured entry on
+// every save without re-resolving — the round-trip is lossless.
+function createAllergyChip(entry){
+  return _createProfileChip(entry, {
     cls:'allergy-chip', tint:'var(--color-coral-tint)', on:'var(--on-coral-tint)',
     border:'var(--color-coral-light)', remover:'removeAllergy'
   });
 }
-function createCurrentMedChip(value, verified){
-  return _createProfileChip(value, verified, {
+function createCurrentMedChip(entry){
+  return _createProfileChip(entry, {
     cls:'current-med-chip', tint:'var(--color-purple-tint)', on:'var(--on-purple-tint)',
     border:'var(--color-purple-light)', remover:'removeCurrentMed'
   });
 }
-function _createProfileChip(value, verified, opts){
+function _createProfileChip(entry, opts){
+  const raw=String(entry&&entry.raw||'');
+  const canonical=String(entry&&entry.canonical||raw);
+  const verified=!!(entry&&entry.verified);
+  const source=String(entry&&entry.source||'legacy');
   const chip=document.createElement('span');
   chip.className=opts.cls;
   const borderColor=verified?opts.border:'var(--color-warning)';
   chip.style.cssText='background:'+opts.tint+';color:'+opts.on+';font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px;border:1px solid '+borderColor+';display:flex;align-items:center;gap:6px';
-  chip.dataset.chipText=value;
+  chip.dataset.raw=raw;
+  chip.dataset.chipText=canonical;
+  chip.dataset.source=source;
   if(!verified) chip.dataset.unverified='true';
-  chip.textContent=value;
+  // Display preserves the user's typed text (raw); engine uses canonical.
+  chip.textContent=raw;
   if(!verified){
     const info=document.createElement('button');
     info.type='button';
     info.setAttribute('aria-label','Why is this unverified?');
     info.style.cssText='background:none;border:none;cursor:pointer;color:var(--color-warning);padding:0;line-height:1;font-size:14px;display:flex;align-items:center';
     info.textContent='ⓘ';
-    info.onclick=function(e){e.stopPropagation(); showVerificationExplainer(value, info);};
+    info.onclick=function(e){e.stopPropagation(); showVerificationExplainer(raw, info);};
     chip.appendChild(info);
   }
   const close=document.createElement('button');
@@ -4077,16 +4088,17 @@ function showVerificationExplainer(value, anchor){
 }
 
 // Hydration-safe inserters — bypass resolver and save trigger so loading
-// a saved profile doesn't re-prompt "Did you mean?" on every chip.
-function _addAllergyChipDirect(value, verified){
+// a saved profile doesn't re-prompt "Did you mean?" on every chip. Take
+// the structured profile entry directly and forward to the chip helper.
+function _addAllergyChipDirect(entry){
   const anchor=document.getElementById('add-allergy-btn');
   if(!anchor) return;
-  anchor.before(createAllergyChip(value, verified));
+  anchor.before(createAllergyChip(entry));
 }
-function _addCurrentMedChipDirect(value, verified){
+function _addCurrentMedChipDirect(entry){
   const anchor=document.getElementById('add-current-med-btn');
   if(!anchor) return;
-  anchor.before(createCurrentMedChip(value, verified));
+  anchor.before(createCurrentMedChip(entry));
 }
 
 // addAllergy / addCurrentMed return true when a chip was actually
@@ -4100,10 +4112,11 @@ function addAllergy(){
   const lower=val.toLowerCase();
   const r=resolveSearchTerm(val);
   if(r.verified && r.result!==lower){
-    showAllergyDidYouMean(val, r.result);
+    showAllergyDidYouMean(val, r.result, r.source);
     return false;
   }
-  const chip=createAllergyChip(val, !!r.verified);
+  const entry={raw:val, canonical:r.result, verified:!!r.verified, source:r.source||'unresolved'};
+  const chip=createAllergyChip(entry);
   document.getElementById('add-allergy-btn').before(chip);
   cancelAllergyInput();
   return true;
@@ -4120,10 +4133,11 @@ function addCurrentMed(){
   const lower=val.toLowerCase();
   const r=resolveSearchTerm(val);
   if(r.verified && r.result!==lower){
-    showCurrentMedDidYouMean(val, r.result);
+    showCurrentMedDidYouMean(val, r.result, r.source);
     return false;
   }
-  const chip=createCurrentMedChip(val, !!r.verified);
+  const entry={raw:val, canonical:r.result, verified:!!r.verified, source:r.source||'unresolved'};
+  const chip=createCurrentMedChip(entry);
   document.getElementById('add-current-med-btn').before(chip);
   cancelCurrentMedInput();
   return true;
@@ -4135,19 +4149,19 @@ function addCurrentMed(){
 // are hidden (display:none) so the wrap visually swaps to a confirmation
 // row. Cancel restores the input with the typed text preserved. All
 // dynamic text is set via textContent — never innerHTML.
-function showAllergyDidYouMean(typedValue, suggestedValue){
+function showAllergyDidYouMean(typedValue, suggestedValue, source){
   _showDidYouMean({
     wrapId:'allergy-input-wrap', inputId:'allergy-input', anchorId:'add-allergy-btn',
     promptId:'allergy-didyoumean', cancelFn:cancelAllergyInput,
-    typedValue:typedValue, suggestedValue:suggestedValue,
+    typedValue:typedValue, suggestedValue:suggestedValue, source:source,
     chipBuilder:createAllergyChip
   });
 }
-function showCurrentMedDidYouMean(typedValue, suggestedValue){
+function showCurrentMedDidYouMean(typedValue, suggestedValue, source){
   _showDidYouMean({
     wrapId:'current-med-input-wrap', inputId:'current-med-input', anchorId:'add-current-med-btn',
     promptId:'currentmed-didyoumean', cancelFn:cancelCurrentMedInput,
-    typedValue:typedValue, suggestedValue:suggestedValue,
+    typedValue:typedValue, suggestedValue:suggestedValue, source:source,
     chipBuilder:createCurrentMedChip
   });
 }
@@ -4181,7 +4195,8 @@ function _showDidYouMean(o){
   yes.style.cssText='background:#2563EB;color:white;border:none;border-radius:100px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer';
   yes.textContent='Yes';
   yes.onclick=function(){
-    document.getElementById(o.anchorId).before(o.chipBuilder(o.suggestedValue, true));
+    const entry={raw:o.typedValue, canonical:o.suggestedValue, verified:true, source:o.source||'BRAND_MAP'};
+    document.getElementById(o.anchorId).before(o.chipBuilder(entry));
     reset();
     o.cancelFn();
     saveCurrentProfile();
@@ -4190,7 +4205,8 @@ function _showDidYouMean(o){
   no.style.cssText='background:var(--color-warning-tint);color:var(--on-warning-tint);border:1px solid var(--color-warning);border-radius:100px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer';
   no.textContent='No';
   no.onclick=function(){
-    document.getElementById(o.anchorId).before(o.chipBuilder(o.typedValue, false));
+    const entry={raw:o.typedValue, canonical:o.typedValue, verified:false, source:'unresolved'};
+    document.getElementById(o.anchorId).before(o.chipBuilder(entry));
     reset();
     o.cancelFn();
     saveCurrentProfile();
@@ -4249,21 +4265,21 @@ const ALLERGY_FAMILIES={
 //                unverified — bubble its name up so safetyBannersHTML can
 //                render a soft "we couldn't verify X" warning. Severity is
 //                NOT escalated; this is informational only.
-function checkAllergyHit(med, allergies, unverifiedSet){
-  if(!med||!Array.isArray(allergies)||!allergies.length) return null;
-  const unv=unverifiedSet||new Set();
+function checkAllergyHit(med, allergyEntries){
+  if(!med||!Array.isArray(allergyEntries)||!allergyEntries.length) return null;
   const haystack=[
     med.inn, med.brand_name,
     ...(Array.isArray(med.shared)?med.shared:[]),
     ...(Array.isArray(med.unique)?med.unique:[])
   ].filter(Boolean).map(s=>String(s).toLowerCase());
   let firstUnverified=null;
-  for(const rawA of allergies){
-    const a=String(rawA||'').trim().toLowerCase();
+  for(const entry of allergyEntries){
+    const canonical=String(entry&&entry.canonical||'');
+    const a=canonical.trim().toLowerCase();
     if(!a) continue;
     // Direct substring match in either direction (covers "ibuprofen" vs "ibuprofen 400mg").
     for(const h of haystack){
-      if(h.includes(a)||a.includes(h)) return {name:rawA, unverified:unv.has(rawA), real:true};
+      if(h.includes(a)||a.includes(h)) return {name:canonical, unverified:!entry.verified, real:true};
     }
     // Family expansion: if the allergy term matches a family key, also check family members.
     const fam=ALLERGY_FAMILIES[a];
@@ -4271,11 +4287,11 @@ function checkAllergyHit(med, allergies, unverifiedSet){
       for(const member of fam){
         const m=member.toLowerCase();
         for(const h of haystack){
-          if(h.includes(m)) return {name:rawA, unverified:unv.has(rawA), real:true};
+          if(h.includes(m)) return {name:canonical, unverified:!entry.verified, real:true};
         }
       }
     }
-    if(!firstUnverified && unv.has(rawA)) firstUnverified=rawA;
+    if(!firstUnverified && !entry.verified) firstUnverified=canonical;
   }
   if(firstUnverified) return {name:firstUnverified, unverified:true, real:false};
   return null;
@@ -4301,6 +4317,38 @@ const INN_SET=new Set([
   ...Object.values(DRUG_CLASSES).flat(),
   ...Object.values(ALLERGY_FAMILIES).flat()
 ].map(s=>String(s).toLowerCase()));
+
+// ── Profile adapters ────────────────────────────────────────────────────
+// Ship 3 made the storage shape structured: profile.allergies and
+// profile.currentMedications are Array<{raw, canonical, verified, source}>.
+// Direct access to those arrays outside this section is a layering
+// violation — every consumer must go through one of the four adapters
+// below. If you need just the canonical names, use getCanonical*().
+// If you also need .verified / .raw / .source, use get*Entries(). The
+// `(e && typeof e === 'object')` fallback keeps legacy bare-string
+// entries safe when migration didn't run (over-warns rather than
+// silently treating them as verified).
+function getCanonicalAllergies(profile){
+  const list=Array.isArray(profile&&profile.allergies)?profile.allergies:[];
+  return list.map(e=>(e&&typeof e==='object')?String(e.canonical||''):String(e||'')).filter(Boolean);
+}
+function getCanonicalMeds(profile){
+  const list=Array.isArray(profile&&profile.currentMedications)?profile.currentMedications:[];
+  return list.map(e=>(e&&typeof e==='object')?String(e.canonical||''):String(e||'')).filter(Boolean);
+}
+function getAllergyEntries(profile){
+  const list=Array.isArray(profile&&profile.allergies)?profile.allergies:[];
+  return list.map(e=>(e&&typeof e==='object')
+    ? e
+    : {raw:String(e||''), canonical:String(e||''), verified:false, source:'legacy'});
+}
+function getMedEntries(profile){
+  const list=Array.isArray(profile&&profile.currentMedications)?profile.currentMedications:[];
+  return list.map(e=>(e&&typeof e==='object')
+    ? e
+    : {raw:String(e||''), canonical:String(e||''), verified:false, source:'legacy'});
+}
+
 function normInn(s){ return String(s||'').toLowerCase().trim(); }
 function innMatchesAny(inn, list){
   const n=normInn(inn);
@@ -4315,13 +4363,12 @@ function innMatchesAny(inn, list){
 // class checks behind isNsaid / isPpi / isAce, so an irrelevant med
 // (e.g. tylenol) never triggers the soft warning.
 function profileTakesClass(profile, classList){
-  const meds=Array.isArray(profile&&profile.currentMedications)?profile.currentMedications:[];
-  if(!meds.length) return null;
-  const unverifiedSet=new Set(Array.isArray(profile&&profile.unverifiedCurrentMeds)?profile.unverifiedCurrentMeds:[]);
+  const entries=getMedEntries(profile);
+  if(!entries.length) return null;
   let firstUnverified=null;
-  for(const m of meds){
-    if(innMatchesAny(m, classList)) return {name:m, unverified:unverifiedSet.has(m), real:true};
-    if(!firstUnverified && unverifiedSet.has(m)) firstUnverified=m;
+  for(const e of entries){
+    if(innMatchesAny(e.canonical, classList)) return {name:e.canonical, unverified:!e.verified, real:true};
+    if(!firstUnverified && !e.verified) firstUnverified=e.canonical;
   }
   if(firstUnverified) return {name:firstUnverified, unverified:true, real:false};
   return null;
@@ -4385,22 +4432,16 @@ function checkContraindications(med, profile){
 }
 
 // ── Banners (contraindication above, allergy below) ─────────────────────
-// Merges the unverified sidecar onto the profile so engine functions (which
-// only see this object) can consult unverifiedAllergies / unverifiedCurrentMeds
-// without re-reading localStorage themselves.
+// Reads the persisted profile and lazily triggers Ship 3 migration if the
+// schema marker is missing (deep-link case where safetyBannersHTML runs
+// before initProfile/applySavedProfile has had a chance to migrate). The
+// schemaVersion === 3 short-circuit makes subsequent calls cheap.
 function profileForSafety(){
   let profile;
-  try { profile = JSON.parse(localStorage.getItem('mm_profile_v1')||'null')||{}; }
-  catch { profile = {}; }
-  try {
-    const raw = JSON.parse(localStorage.getItem(UNVERIFIED_STORAGE_KEY)||'null')||{};
-    profile.unverifiedAllergies = Array.isArray(raw.allergies) ? raw.allergies : [];
-    profile.unverifiedCurrentMeds = Array.isArray(raw.currentMedications) ? raw.currentMedications : [];
-  } catch {
-    profile.unverifiedAllergies = [];
-    profile.unverifiedCurrentMeds = [];
-  }
-  return profile;
+  try { profile = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null'); }
+  catch { profile = null; }
+  if(profile && profile.schemaVersion !== 3) profile = migrateProfileShape(profile);
+  return profile || {};
 }
 // Soft-warning element — appended after a real banner that mentioned an
 // unverified profile entry, OR rendered standalone when only the carve-out
@@ -4414,8 +4455,7 @@ function _softWarningHTML(name){
 }
 function safetyBannersHTML(med){
   const profile=profileForSafety();
-  const allergies=Array.isArray(profile.allergies)?profile.allergies:[];
-  const allergyResult=checkAllergyHit(med, allergies, new Set(profile.unverifiedAllergies||[]));
+  const allergyResult=checkAllergyHit(med, getAllergyEntries(profile));
   const contraHits=checkContraindications(med, profile);
   let html='';
   // Dedupe soft warnings by name — one entry shouldn't fire two warnings even
@@ -4566,6 +4606,9 @@ const PROFILE_EMPTY_MARK='Not set';
 function loadSavedProfile(){
   try { return JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null'); } catch { return null; }
 }
+// Used by migrateProfileShape only. After Ship 3 migration runs once,
+// the sidecar key is removed; this reader exists solely to seed the
+// `verified` flag during legacy → schema-3 migration.
 function loadUnverifiedSidecar(){
   try {
     const raw=JSON.parse(localStorage.getItem(UNVERIFIED_STORAGE_KEY)||'null');
@@ -4586,28 +4629,39 @@ function saveCurrentProfile(){
     const prev=JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY)||'null');
     if(prev && typeof prev.loc==='string') legacyLoc=prev.loc;
   } catch {}
-  // Chip text via [data-chip-text] (set at chip creation) — robust to any
-  // future structural change inside the chip (info icon, badges, etc.).
+  // Reconstruct the structured per-entry shape from the chip dataset.
+  // All four attributes are stamped by _createProfileChip — round-trip is
+  // lossless without re-running the resolver.
   const allergyChips=[...document.querySelectorAll('#allergy-chips .allergy-chip')];
   const currentMedChips=[...document.querySelectorAll('#current-med-chips .current-med-chip')];
+  const chipToEntry=function(c){
+    const raw=c.dataset.raw||c.dataset.chipText||'';
+    const canonical=c.dataset.chipText||c.dataset.raw||'';
+    return {
+      raw:raw,
+      canonical:canonical,
+      verified:c.dataset.unverified!=='true',
+      source:c.dataset.source||'legacy'
+    };
+  };
   const data={
+    schemaVersion:3,
     first:inpVal('hd-i-first'), last:inpVal('hd-i-last'),
     dob:inpVal('hd-i-dob'), sex:inpVal('hd-i-sex'),
     homeCity:inpVal('hd-i-city'), homeCountryCode:homeCountryCode,
     blood:inpVal('hd-i-blood'), wheelchair:inpVal('hd-i-wheelchair'),
     ecName:inpVal('ec-i-name'), ecRel:inpVal('ec-i-rel'), ecPhone:inpVal('ec-i-phone'),
     midId:getVal('mid-v-id'),
-    allergies:allergyChips.map(c=>c.dataset.chipText||'').filter(Boolean),
-    currentMedications:currentMedChips.map(c=>c.dataset.chipText||'').filter(Boolean),
+    allergies:allergyChips.map(chipToEntry).filter(e=>e.canonical),
+    currentMedications:currentMedChips.map(chipToEntry).filter(e=>e.canonical),
     isPregnant:!!(pregSel&&pregSel.value==='true'),
     photo:(document.getElementById('profile-photo')||{}).src||''
   };
   if(legacyLoc) data.loc=legacyLoc;
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
-  // Sidecar — only chips currently flagged unverified.
-  const unverifiedAllergies=allergyChips.filter(c=>c.dataset.unverified==='true').map(c=>c.dataset.chipText||'').filter(Boolean);
-  const unverifiedCurrentMeds=currentMedChips.filter(c=>c.dataset.unverified==='true').map(c=>c.dataset.chipText||'').filter(Boolean);
-  localStorage.setItem(UNVERIFIED_STORAGE_KEY, JSON.stringify({allergies:unverifiedAllergies, currentMedications:unverifiedCurrentMeds}));
+  // Sidecar is no longer needed under schema 3 — verified is per-entry.
+  // Idempotent removeItem; the first save after migration drops it for good.
+  try { localStorage.removeItem(UNVERIFIED_STORAGE_KEY); } catch {}
 }
 function getVal(id){const el=document.getElementById(id);if(!el)return '';const t=(el.textContent||'').trim();return t===PROFILE_EMPTY_MARK?'':t;}
 function inpVal(id){const el=document.getElementById(id);if(!el)return '';return (el.value||'').trim();}
@@ -4673,7 +4727,63 @@ function dobToIso(raw){
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
+// Ship 3 storage migration. Idempotent (gated on schemaVersion === 3).
+// Wraps every legacy bare-string allergy/currentMedication entry into
+// {raw, canonical, verified, source:'legacy'}, seeding `verified` from
+// the Ship 2 sidecar, then writes the new shape and removes the sidecar.
+// Belt-and-suspenders try/catch — on any failure we leave the profile in
+// its legacy shape; the adapters' defensive (e && typeof e === 'object')
+// fallback wraps bare strings as unverified ('legacy' source), which
+// over-warns rather than silently dropping safety checks.
+//
+// Pre-mutation backup: the old localStorage string is copied to
+// 'mm_profile_v1_pre_v3_backup' (only if absent — never clobbers an
+// existing rescue snapshot). Recovery one-liner if Ship 3 misbehaves:
+//   localStorage.setItem('mm_profile_v1', localStorage.getItem('mm_profile_v1_pre_v3_backup'))
+function migrateProfileShape(saved){
+  if(!saved || saved.schemaVersion===3) return saved;
+  try {
+    const oldString=localStorage.getItem(PROFILE_STORAGE_KEY);
+    if(oldString && !localStorage.getItem('mm_profile_v1_pre_v3_backup')){
+      localStorage.setItem('mm_profile_v1_pre_v3_backup', oldString);
+    }
+    let sidecar=null;
+    try { sidecar=loadUnverifiedSidecar(); } catch {}
+    const unverifiedAllergies=new Set((sidecar&&sidecar.allergies)||[]);
+    const unverifiedCurrentMeds=new Set((sidecar&&sidecar.currentMedications)||[]);
+    const wrap=function(item, isUnvLegacy){
+      if(item && typeof item==='object'){
+        // Already partially structured — preserve existing fields, fill gaps.
+        const r=String(item.raw||item.canonical||'');
+        const c=String(item.canonical||item.raw||'');
+        return {
+          raw:r,
+          canonical:c,
+          verified: typeof item.verified==='boolean' ? item.verified : !isUnvLegacy,
+          source: String(item.source||'legacy')
+        };
+      }
+      const s=String(item||'');
+      return {raw:s, canonical:s, verified:!isUnvLegacy, source:'legacy'};
+    };
+    const out={...saved};
+    out.allergies=Array.isArray(saved.allergies)
+      ? saved.allergies.map(s=>wrap(s, unverifiedAllergies.has(s)))
+      : [];
+    out.currentMedications=Array.isArray(saved.currentMedications)
+      ? saved.currentMedications.map(s=>wrap(s, unverifiedCurrentMeds.has(s)))
+      : [];
+    out.schemaVersion=3;
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(out));
+    localStorage.removeItem(UNVERIFIED_STORAGE_KEY);
+    return out;
+  } catch(e){
+    console.warn('Ship 3 migration failed; leaving profile in legacy shape:', e);
+    return saved;
+  }
+}
 function applySavedProfile(saved){
+  saved=migrateProfileShape(saved);
   const setInp=(id,val)=>{const el=document.getElementById(id);if(el) el.value=val||'';};
   setInp('hd-i-first',saved.first);setInp('hd-i-last',saved.last);
   setInp('hd-i-dob',dobToIso(saved.dob));
@@ -4709,42 +4819,17 @@ function applySavedProfile(saved){
     const ph=document.querySelector('.profile-photo-placeholder');
     if(ph) ph.remove();
   }
-  // Sidecar lookup → which entries should hydrate as unverified. On first
-  // load after this ship rolls out, the sidecar is missing; one-time
-  // migration walks every saved entry through resolveSearchTerm and seeds
-  // the sidecar from the result. Wrapped in try/catch — if migration
-  // explodes for any reason, we treat all entries as verified (lossy but
-  // safe, never blocks profile load).
-  let unverifiedAllergiesSet=new Set();
-  let unverifiedCurrentMedsSet=new Set();
-  try {
-    let sidecar=loadUnverifiedSidecar();
-    if(!sidecar){
-      const migAllergies=[];
-      const migCurrentMeds=[];
-      (Array.isArray(saved.allergies)?saved.allergies:[]).forEach(function(a){
-        const r=resolveSearchTerm(String(a||''));
-        const lower=String(a||'').toLowerCase().trim();
-        if(!r.verified || r.result!==lower) migAllergies.push(a);
-      });
-      (Array.isArray(saved.currentMedications)?saved.currentMedications:[]).forEach(function(m){
-        const r=resolveSearchTerm(String(m||''));
-        const lower=String(m||'').toLowerCase().trim();
-        if(!r.verified || r.result!==lower) migCurrentMeds.push(m);
-      });
-      sidecar={allergies:migAllergies, currentMedications:migCurrentMeds};
-      localStorage.setItem(UNVERIFIED_STORAGE_KEY, JSON.stringify(sidecar));
-    }
-    unverifiedAllergiesSet=new Set(sidecar.allergies);
-    unverifiedCurrentMedsSet=new Set(sidecar.currentMedications);
-  } catch(e){
-    console.warn('Unverified sidecar migration failed; treating all as verified:', e);
+  // Hydration via the structured shape. migrateProfileShape ran at the
+  // top of this function (idempotent); both arrays are now per-entry
+  // {raw, canonical, verified, source}. Adapters are defensive against
+  // legacy bare strings if migration was bypassed by failure.
+  const allergyEntries=getAllergyEntries(saved);
+  if(allergyEntries.length){
+    allergyEntries.forEach(e=>{ _addAllergyChipDirect(e); });
   }
-  if(Array.isArray(saved.allergies) && saved.allergies.length){
-    saved.allergies.forEach(a=>{ _addAllergyChipDirect(a, !unverifiedAllergiesSet.has(a)); });
-  }
-  if(Array.isArray(saved.currentMedications) && saved.currentMedications.length){
-    saved.currentMedications.forEach(m=>{ _addCurrentMedChipDirect(m, !unverifiedCurrentMedsSet.has(m)); });
+  const currentMedEntries=getMedEntries(saved);
+  if(currentMedEntries.length){
+    currentMedEntries.forEach(e=>{ _addCurrentMedChipDirect(e); });
   }
   const pregSel=document.getElementById('hd-i-pregnant');
   if(pregSel) pregSel.value=saved.isPregnant?'true':'false';
