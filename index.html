@@ -4988,7 +4988,7 @@ function acceptDisclaimer(){
 // PWA: register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/medmatch/sw.js')
+    navigator.serviceWorker.register('/medmatch/sw.js', { updateViaCache: 'none' })
       .then((reg) => console.log('Service worker registered:', reg.scope))
       .catch((err) => console.error('Service worker registration failed:', err));
   });

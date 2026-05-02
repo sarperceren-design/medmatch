@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medmatch-v1';
+const CACHE_NAME = 'medmatch-v2';
 const APP_SHELL = [
   '/medmatch/',
   '/medmatch/index.html',
@@ -38,6 +38,34 @@ self.addEventListener('fetch', (event) => {
   if (isApiCall) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Network-first for HTML navigation requests so each deploy is visible
+  // on the next page load. Without this, cache-first served the precached
+  // index.html forever and new deploys were invisible until the SW script
+  // itself changed bytes. Falls back to cache (then to /medmatch/index.html,
+  // then a synthesized 503) so offline mode still renders something.
+  const isHTML = event.request.mode === 'navigate' ||
+                 event.request.destination === 'document' ||
+                 url.pathname === '/medmatch/' ||
+                 url.pathname === '/medmatch/index.html';
+  if (isHTML) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response && response.status === 200) {
+          const cloned = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+        }
+        return response;
+      }).catch(() =>
+        caches.match(event.request).then((cached) =>
+          cached || caches.match('/medmatch/index.html').then((fallback) =>
+            fallback || new Response('Offline', { status: 503, statusText: 'Service Unavailable' })
+          )
+        )
+      )
     );
     return;
   }
