@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>MedMatch</title>
+<title>MedMatchAI</title>
 <!-- PWA / iOS web app integration -->
 <link rel="manifest" href="/medmatch/icons/site.webmanifest">
 <link rel="icon" type="image/png" sizes="96x96" href="/medmatch/icons/favicon-96x96.png">
 <link rel="icon" type="image/svg+xml" href="/medmatch/icons/favicon.svg">
 <link rel="shortcut icon" href="/medmatch/icons/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/medmatch/icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-title" content="MedMatch">
+<meta name="apple-mobile-web-app-title" content="MedMatchAI">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#FAFAF9">
@@ -149,8 +149,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .logo{display:flex;align-items:center;gap:8px}
 .logo-icon{width:32px;height:32px;background:#FFFFFF;box-shadow:0 1px 4px rgba(0,0,0,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center}
 .logo-text{font-size:20px;font-weight:700;color:#EF4444}
-.logo-text b{color:#2563EB;font-weight:700}
-.dark .logo-text{color:#FFFFFF}
+.logo-text b{color:#2563EB;font-weight:700}.logo-text i{background:linear-gradient(to right,#F87171,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;font-style:normal}
+.dark .logo-text{color:#FFFFFF}.dark .logo-text b{color:#2563EB}.dark .logo-text i{background:linear-gradient(to right,#F87171,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
 /* Theme toggle */
 .ttog{width:52px;height:28px;background:rgba(0,0,0,0.12);border-radius:14px;border:none;cursor:pointer;position:relative;padding:3px;flex-shrink:0}
@@ -351,7 +351,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
     <div id="ob-left" style="width:36px;height:36px;flex-shrink:0">
       <button id="ob-back-btn" onclick="obBack()" style="display:none;width:36px;height:36px;background:var(--surface-input);border:none;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
     </div>
-    <span class="logo-text" style="position:absolute;left:50%;transform:translateX(-50%);font-size:24px">Med<b>Match</b></span>
+    <span class="logo-text" style="position:absolute;left:50%;transform:translateX(-50%);font-size:24px">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
 
@@ -417,7 +417,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <div class="page-header" style="position:relative">
     <button id="search-back-btn" class="back-btn" onclick="navHistory=[];clearSearch();" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
     <div id="search-spacer" style="width:52px"></div>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
 
@@ -431,7 +431,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       Scan packaging or prescription
     </button>
-    <p style="margin:10px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.4">MedMatch covers prescription &amp; OTC medications. Supplements and vitamins have limited coverage.</p>
+    <p style="margin:10px 0 0;font-size:12px;color:var(--text-secondary);line-height:1.4">MedMatchAI covers prescription &amp; OTC medications. Supplements and vitamins have limited coverage.</p>
     <!-- Persistent "Traveling to {country}" status link. Tap to open the
          destination picker. Text is rendered dynamically by
          refreshChangeDestText() at script load and on every picker commit. -->
@@ -502,7 +502,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <!-- Header — matches all other pages exactly -->
   <div class="page-header" style="position:relative">
     <div style="width:36px;flex-shrink:0"></div>
-    <span class="logo-text" style="position:absolute;left:50%;transform:translateX(-50%);font-size:24px">Med<b>Match</b></span>
+    <span class="logo-text" style="position:absolute;left:50%;transform:translateX(-50%);font-size:24px">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
 
@@ -546,7 +546,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 <div class="page" id="page-results" style="background:var(--surface-page)">
   <div class="page-header" style="position:relative">
     <button class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   
@@ -597,7 +597,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 <div class="page" id="page-detail" style="background:var(--surface-page)">
   <div class="page-header" style="position:relative">
     <button class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   
@@ -715,7 +715,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 <div class="page" id="page-pharmacies" style="background:var(--surface-page)">
   <div class="page-header" style="position:relative">
     <button class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   <div id="ph-map-bg" style="position:absolute;inset:0;z-index:0;pointer-events:none"><div id="leaflet-map" style="width:100%;height:100%;pointer-events:all"></div></div>
@@ -767,7 +767,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 <div class="page" id="page-saved" style="background:var(--surface-page)">
   <div class="page-header" style="position:relative">
     <div style="width:52px"></div>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   
@@ -785,7 +785,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 <div class="page" id="page-profile" style="background:var(--surface-page)">
   <div class="page-header" style="position:relative">
     <div style="width:52px"></div>
-    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b></span>
+    <span class="logo-text" style="font-size:24px;position:absolute;left:50%;transform:translateX(-50%)">Med<b>Match</b><i>AI</i></span>
     <button class="ttog" onclick="toggleTheme()" aria-label="Toggle theme"><div class="tthumb"><span class="tog-sun"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span><span class="tog-moon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></div></button>
   </div>
   
@@ -1045,7 +1045,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
 
     <!-- ── ABOUT ── -->
     <div style="background:var(--surface-card);border:1px solid var(--border-card);border-radius:20px;box-shadow:var(--shadow);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <span style="font-size:15px;color:var(--text-primary)">About MedMatch</span>
+      <span style="font-size:15px;color:var(--text-primary)">About MedMatchAI</span>
       <span style="font-size:13px;color:var(--text-disabled)">v1.0.0</span>
     </div>
 
@@ -1153,7 +1153,7 @@ p{font-size:15px;line-height:1.5;color:var(--text-secondary)}
   <div style="background:var(--surface-card);border-radius:24px 24px 0 0;padding:24px 24px 32px;width:100%">
     <div style="width:36px;height:4px;background:var(--divider);border-radius:2px;margin:0 auto 20px"></div>
     <h2 style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:12px">Medical Disclaimer</h2>
-    <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px">MedMatch provides medication information <strong style="color:var(--text-primary)">for reference only</strong>. It is not a medical device and does not diagnose or treat any medical condition.</p>
+    <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px">MedMatchAI provides medication information <strong style="color:var(--text-primary)">for reference only</strong>. It is not a medical device and does not diagnose or treat any medical condition.</p>
     <p style="font-size:14px;line-height:1.6;color:var(--text-secondary);margin-bottom:24px">Always consult a <strong style="color:var(--text-primary)">pharmacist or doctor</strong> before taking any medication, especially when travelling.</p>
     <button onclick="acceptDisclaimer()" style="width:100%;padding:15px;background:#4F6EF7;border:none;border-radius:16px;font-size:15px;font-weight:700;color:#fff;cursor:pointer">I Understand</button>
   </div>
@@ -1372,7 +1372,7 @@ const TUT_STEPS=[
   {
     illus:2,
     title:'One last thing',
-    body:'MedMatch shows verified matches — always confirm with a local pharmacist before buying.',
+    body:'MedMatchAI shows verified matches — always confirm with a local pharmacist before buying.',
     btn:'Start searching'
   }
 ];
@@ -2543,17 +2543,17 @@ function medSourceInfo(med){
   // Fallback: honest default based on country_code for seed data
   if(cc==='US'){
     return {
-      name: 'MedMatch curated — awaiting openFDA sync',
+      name: 'MedMatchAI curated — awaiting openFDA sync',
       url: fallbackUrl,
       verified: false,
-      short: 'MedMatch curated'
+      short: 'MedMatchAI curated'
     };
   }
   return {
-    name: 'MedMatch curated — awaiting regulator sync',
+    name: 'MedMatchAI curated — awaiting regulator sync',
     url: fallbackUrl,
     verified: false,
-    short: 'MedMatch curated'
+    short: 'MedMatchAI curated'
   };
 }
 
@@ -4864,7 +4864,7 @@ function insertProfileInvite(){
     </div>
     <div style="flex:1">
       <p style="font-size:14px;font-weight:700;color:var(--on-purple-tint);margin:0 0 2px">Complete your profile</p>
-      <p style="font-size:12px;color:var(--on-purple-tint);opacity:.85;line-height:1.4;margin:0">Add your health details, allergies, and emergency contact so MedMatch can personalise safety warnings.</p>
+      <p style="font-size:12px;color:var(--on-purple-tint);opacity:.85;line-height:1.4;margin:0">Add your health details, allergies, and emergency contact so MedMatchAI can personalise safety warnings.</p>
     </div>`;
   scroll.insertBefore(banner, scroll.firstElementChild);
 }
